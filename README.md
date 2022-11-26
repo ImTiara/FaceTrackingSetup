@@ -17,6 +17,10 @@ Each component allows you to easily tweak the settings to your needs.
 2. Create an empty GameObject in your scene.
 3. Add the "FaceTrackingSetup" component to it.
 
+# TODO
+- Improvements to the Mouth Tracking section.
+- Binary parameter support for the Mouth Tracking.
+
 # Screenshots
 - Base
 
@@ -30,7 +34,7 @@ Each component allows you to easily tweak the settings to your needs.
 
 ![3](https://user-images.githubusercontent.com/39366953/204088339-01007d30-c00f-47e3-9693-e86b4ff22e9c.png)
 
-- Eye Dilation
+- Pupil Dilation
 
 ![4](https://user-images.githubusercontent.com/39366953/204088342-65741090-475e-49b2-aa51-77cefe88d302.png)
 
