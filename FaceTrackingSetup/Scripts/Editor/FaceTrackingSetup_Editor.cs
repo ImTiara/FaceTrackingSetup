@@ -60,17 +60,34 @@ namespace ImTiara
 
             GUILayout.Space(10);
 
-            GUILayout.BeginHorizontal();
-            fts.createEyeTrackingToggle = EditorGUILayout.Toggle("Eye Tracking Toggle", fts.createEyeTrackingToggle);
-            if (GUILayout.Button("Copy Parameter")) EditorGUIUtility.systemCopyBuffer = FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER;
-            GUILayout.EndHorizontal();
+            fts.isShowingSettings = EditorGUILayout.Foldout(fts.isShowingSettings, "Base Settings", true);
+            if (fts.isShowingSettings)
+            {
+                EditorGUI.indentLevel++;
 
-            GUILayout.BeginHorizontal();
-            fts.createMouthTrackingToggle = EditorGUILayout.Toggle("Mouth Tracking Toggle", fts.createMouthTrackingToggle);
-            if (GUILayout.Button("Copy Parameter")) EditorGUIUtility.systemCopyBuffer = FaceTrackingSetup.MOUTH_TRACKING_TOGGLE_PARAMETER;
-            GUILayout.EndHorizontal();
+                GUILayout.BeginVertical("Window");
+
+                fts.fxWriteDefaults = EditorGUILayout.Toggle("FX Write Defaults", fts.fxWriteDefaults);
+                fts.additiveWriteDefaults = EditorGUILayout.Toggle("Additive Write Defaults", fts.additiveWriteDefaults);
+
+                GUILayout.Space(10);
+
+                GUILayout.BeginHorizontal();
+                fts.createEyeTrackingToggle = EditorGUILayout.Toggle("Eye Tracking Toggle", fts.createEyeTrackingToggle);
+                if (GUILayout.Button("Copy Parameter")) EditorGUIUtility.systemCopyBuffer = FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER;
+                GUILayout.EndHorizontal();
+
+                GUILayout.BeginHorizontal();
+                fts.createMouthTrackingToggle = EditorGUILayout.Toggle("Mouth Tracking Toggle", fts.createMouthTrackingToggle);
+                if (GUILayout.Button("Copy Parameter")) EditorGUIUtility.systemCopyBuffer = FaceTrackingSetup.MOUTH_TRACKING_TOGGLE_PARAMETER;
+                GUILayout.EndHorizontal();
+
+                GUILayout.EndVertical();
+
+                EditorGUI.indentLevel--;
+            }
             
-            GUILayout.Space(10);
+            GUILayout.Space(20);
 
             fts.isShowingEyeTrackingSettings = EditorGUILayout.Foldout(fts.isShowingEyeTrackingSettings, "Eye Tracking", true);
             if (fts.isShowingEyeTrackingSettings)
@@ -601,7 +618,7 @@ namespace ImTiara
                                 fts.trackedMouths[i].Remove(i2);
                                 return;
                             }
-                            GUILayout.EndVertical();
+                            GUILayout.EndHorizontal();
                             GUILayout.Space(10);
                         }
                         if (GUILayout.Button("Add Affected Blendshape"))
@@ -814,9 +831,7 @@ namespace ImTiara
                 leftEyeBlendTree.hideFlags = HideFlags.HideInHierarchy;
                 var leftEyeState = leftEyeLayer.stateMachine.AddState("Left Eye");
                 leftEyeState.motion = leftEyeBlendTree;
-                leftEyeState.writeDefaultValues = true;
                 leftEyeState.timeParameterActive = false;
-                AssetDatabase.AddObjectToAsset(leftEyeBlendTree, AssetDatabase.GetAssetPath(fx));
 
                 EditorUtility.DisplayProgressBar("Face Tracking Setup - Eye Tracking", "Creating look blendtrees (right)", 0.8f);
                 BlendTree rightEyeBlendTree = new BlendTree() { name = "Right Eye", blendType = BlendTreeType.SimpleDirectional2D, blendParameter = "RightEyeX", blendParameterY = "EyesY" };
@@ -828,14 +843,32 @@ namespace ImTiara
                 rightEyeBlendTree.hideFlags = HideFlags.HideInHierarchy;
                 var rightEyeState = rightEyeLayer.stateMachine.AddState("Right Eye");
                 rightEyeState.motion = rightEyeBlendTree;
-                rightEyeState.writeDefaultValues = true;
+
                 rightEyeState.timeParameterActive = false;
-                AssetDatabase.AddObjectToAsset(rightEyeBlendTree, AssetDatabase.GetAssetPath(fx));
+               
+
+                switch(fts.eyeTrackingMode)
+                {
+                    case FaceTrackingSetup.EyeTrackingMode.EyeBone:
+                        leftEyeState.writeDefaultValues = fts.additiveWriteDefaults;
+                        rightEyeState.writeDefaultValues = fts.additiveWriteDefaults;
+                        
+                        AssetDatabase.AddObjectToAsset(leftEyeBlendTree, AssetDatabase.GetAssetPath(additive));
+                        AssetDatabase.AddObjectToAsset(rightEyeBlendTree, AssetDatabase.GetAssetPath(additive));
+                        break;
+                    case FaceTrackingSetup.EyeTrackingMode.BlendShape:
+                        leftEyeState.writeDefaultValues = fts.fxWriteDefaults;
+                        rightEyeState.writeDefaultValues = fts.fxWriteDefaults;
+                        
+                        AssetDatabase.AddObjectToAsset(leftEyeBlendTree, AssetDatabase.GetAssetPath(fx));
+                        AssetDatabase.AddObjectToAsset(rightEyeBlendTree, AssetDatabase.GetAssetPath(fx));
+                        break;
+                }
                 
                 if (fts.createEyeTrackingToggle)
                 {
-                    CreateToggle(leftEyeLayer, leftEyeState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER);
-                    CreateToggle(rightEyeLayer, rightEyeState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER);
+                    CreateToggle(leftEyeLayer, leftEyeState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.eyeTrackingMode == FaceTrackingSetup.EyeTrackingMode.EyeBone ? fts.additiveWriteDefaults : fts.fxWriteDefaults);
+                    CreateToggle(rightEyeLayer, rightEyeState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.eyeTrackingMode == FaceTrackingSetup.EyeTrackingMode.EyeBone ? fts.additiveWriteDefaults : fts.fxWriteDefaults);
                 }
 
                 EditorUtility.ClearProgressBar();
@@ -907,7 +940,7 @@ namespace ImTiara
                 };
                 var leftEyeLidState = leftEyeLidExpandedLayer.stateMachine.AddState("Eye Lid");
                 leftEyeLidState.motion = leftEyeLidBlendTree;
-                leftEyeLidState.writeDefaultValues = true;
+                leftEyeLidState.writeDefaultValues = fts.fxWriteDefaults;
                 leftEyeLidState.timeParameterActive = false;
                 AssetDatabase.AddObjectToAsset(leftEyeLidBlendTree, AssetDatabase.GetAssetPath(fx));
 
@@ -920,7 +953,7 @@ namespace ImTiara
                 };
                 var rightEyeLidState = rightEyeLidExpandedLayer.stateMachine.AddState("Eye Lid");
                 rightEyeLidState.motion = rightEyeLidBlendTree;
-                rightEyeLidState.writeDefaultValues = true;
+                rightEyeLidState.writeDefaultValues = fts.fxWriteDefaults;
                 rightEyeLidState.timeParameterActive = false;
                 AssetDatabase.AddObjectToAsset(rightEyeLidBlendTree, AssetDatabase.GetAssetPath(fx));
         
@@ -948,8 +981,8 @@ namespace ImTiara
 
                 if (fts.createEyeTrackingToggle)
                 {
-                    CreateToggle(leftEyeLidExpandedLayer, leftEyeLidState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER);
-                    CreateToggle(rightEyeLidExpandedLayer, rightEyeLidState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER);
+                    CreateToggle(leftEyeLidExpandedLayer, leftEyeLidState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults);
+                    CreateToggle(rightEyeLidExpandedLayer, rightEyeLidState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults);
                 }
 
                 EditorUtility.ClearProgressBar();
@@ -991,13 +1024,13 @@ namespace ImTiara
                 blendTree.hideFlags = HideFlags.HideInHierarchy;
                 var state = eyeDilationLayer.stateMachine.AddState("Pupil");
                 state.motion = blendTree;
-                state.writeDefaultValues = true;
+                state.writeDefaultValues = fts.fxWriteDefaults;
                 state.timeParameterActive = false;
                 AssetDatabase.AddObjectToAsset(blendTree, AssetDatabase.GetAssetPath(fx));
 
                 if (fts.createEyeTrackingToggle)
                 {
-                    CreateToggle(eyeDilationLayer, state, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER);
+                    CreateToggle(eyeDilationLayer, state, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults);
                 }
 
                 EditorUtility.ClearProgressBar();
@@ -1038,13 +1071,13 @@ namespace ImTiara
                             blendTree.hideFlags = HideFlags.HideInHierarchy;
                             var state = layer.stateMachine.AddState(FaceTrackingSetup.mouthParameterNames[i]);
                             state.motion = blendTree;
-                            state.writeDefaultValues = true;
+                            state.writeDefaultValues = fts.fxWriteDefaults;
                             state.timeParameterActive = false;
                             AssetDatabase.AddObjectToAsset(blendTree, AssetDatabase.GetAssetPath(fx));
 
                             if (fts.createEyeTrackingToggle)
                             {
-                                CreateToggle(layer, state, FaceTrackingSetup.MOUTH_TRACKING_TOGGLE_PARAMETER);
+                                CreateToggle(layer, state, FaceTrackingSetup.MOUTH_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults);
                             }
                             break;
                             
@@ -1225,9 +1258,10 @@ namespace ImTiara
             vrcParameters.parameters = _parameters.ToArray();
         }
 
-        public static void CreateToggle(AnimatorControllerLayer layer, AnimatorState animatorState, string parameter)
+        public static void CreateToggle(AnimatorControllerLayer layer, AnimatorState animatorState, string parameter, bool writeDefaults)
         {
             var disable = layer.stateMachine.AddState("Disable");
+            disable.writeDefaultValues = writeDefaults;
             var onToDisable = animatorState.AddTransition(disable);
             var disableToOn = disable.AddTransition(animatorState);
 

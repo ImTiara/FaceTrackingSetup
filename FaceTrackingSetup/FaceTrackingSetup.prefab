@@ -47,11 +47,16 @@ MonoBehaviour:
   expressionParameters: {fileID: 0}
   additive: {fileID: 0}
   fx: {fileID: 0}
-  isShowingBlinkSettings: 0
+  faceMesh: {fileID: 0}
+  additiveWriteDefaults: 1
+  fxWriteDefaults: 1
+  createEyeTrackingToggle: 0
+  createMouthTrackingToggle: 0
+  isShowingSettings: 0
   isShowingEyeTrackingSettings: 0
+  isShowingBlinkSettings: 0
   isShowingEyeDilationSettings: 0
   isShowingMouthSettings: 0
-  faceMesh: {fileID: 0}
   enableEyeTracking: 0
   eyeTrackingMode: 0
   isAdvancedEyeTrackingSettings: 0
@@ -63,14 +68,14 @@ MonoBehaviour:
   Eye_Right_Right: 5.85
   Eye_Right_Up: 8
   Eye_Right_Down: -10
-  eyeLeftLeftShapeKey: 100
-  eyeLeftRightShapeKey: 100
-  eyeLeftUpShapeKey: 100
-  eyeLeftDownShapeKey: 100
-  eyeRightLeftShapeKey: 100
-  eyeRightRightShapeKey: 100
-  eyeRightUpShapeKey: 100
-  eyeRightDownShapeKey: 100
+  eyeLeftLeftShapeKeyWeight: 100
+  eyeLeftRightShapeKeyWeight: 100
+  eyeLeftUpShapeKeyWeight: 100
+  eyeLeftDownShapeKeyWeight: 100
+  eyeRightLeftShapeKeyWeight: 100
+  eyeRightRightShapeKeyWeight: 100
+  eyeRightUpShapeKeyWeight: 100
+  eyeRightDownShapeKeyWeight: 100
   leftleftShapeKey: -none-
   leftrightShapeKey: -none-
   leftupShapeKey: -none-
@@ -79,9 +84,6 @@ MonoBehaviour:
   rightrightShapeKey: -none-
   rightupShapeKey: -none-
   rightdownShapeKey: -none-
-  eyeTrackingInterpolated: 0
-  eyeTrackingInterpolatedResolution: 24
-  eyeTrackingInterpolatedTransitionDuration: 0.05
   enableBlinking: 0
   blinkingMode: 0
   leftBlinkShapeKey: -none-
@@ -95,91 +97,122 @@ MonoBehaviour:
   blinkingThreshold_Blink: 0.1
   blinkingThreshold_Normal: 0.8
   blinkingThreshold_Wide: 1
-  blinkingInterpolated: 0
-  blinkingInterpolatedResolution: 25
-  blinkingInterpolatedTransitionDuration: 0.075
   enablePupils: 0
   constrictedShapeKey: -none-
   dilatedShapeKey: -none-
   pupilsThreshold_Constricted: 0.15
   pupilsThreshold_Normal: 0.6
   pupilsThreshold_Dilated: 0.85
-  pupilsInterpolated: 0
-  pupilsInterpolatedResolution: 25
-  pupilsInterpolatedTransitionDuration: 0.1
   mouthEnable: 0
   trackedMouths:
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []
-  - blendShapes: []
+  - type: 0
+    blendShapes: []
     weights: []

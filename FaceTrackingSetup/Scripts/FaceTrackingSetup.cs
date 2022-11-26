@@ -7,7 +7,7 @@ namespace ImTiara
 {
     public sealed class FaceTrackingSetup : MonoBehaviour
     {
-        public const string VERSION = "1.0.0";
+        public const string VERSION = "1.0.1";
 
         public const string NONE = "-none-";
 
@@ -20,13 +20,15 @@ namespace ImTiara
 
         public SkinnedMeshRenderer faceMesh;
 
+        public bool additiveWriteDefaults = true;
+        public bool fxWriteDefaults = true;
         public bool createEyeTrackingToggle;
         public bool createMouthTrackingToggle;
 
         public const string EYE_TRACKING_TOGGLE_PARAMETER = "enableEyeTracking";
         public const string MOUTH_TRACKING_TOGGLE_PARAMETER = "enableMouthTracking";
 
-        public bool isShowingBlinkSettings, isShowingEyeTrackingSettings, isShowingEyeDilationSettings, isShowingMouthSettings;
+        public bool isShowingSettings, isShowingEyeTrackingSettings, isShowingBlinkSettings, isShowingEyeDilationSettings, isShowingMouthSettings;
 
         #region Eye Tracking
         public const float LEFT_LEFT = 5.85f;
