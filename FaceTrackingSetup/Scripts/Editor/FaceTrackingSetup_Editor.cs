@@ -22,6 +22,10 @@ namespace ImTiara.FaceTrackingSetup
         public static readonly Color yellow = new Color(1.0f, 1.0f, 0.6f);
         public static readonly Color green = new Color(0.6f, 1.0f, 0.6f);
 
+
+        public static string[] filterKeywords = new string[0];
+        public static string filterString = "";
+
         public override void OnInspectorGUI()
         {
             Undo.RecordObject(target, "FTS Change");
@@ -622,10 +626,37 @@ namespace ImTiara.FaceTrackingSetup
 
                     GUILayout.Space(10);
 
-                    string[] array = blendShapes.ToArray();
+                    GUILayout.BeginHorizontal();
+                    filterString = EditorGUILayout.TextField("Filter", filterString);
+                    if (GUILayout.Button("X", GUILayout.Width(20)))
+                    {
+                        filterString = "";
+                        GUI.FocusControl(null);
+                    }
+                    GUILayout.EndHorizontal();
 
+                    if (filterString != "") filterKeywords = filterString.Split(' ');
+
+                    GUILayout.Space(10);
+
+                    string[] array = blendShapes.ToArray();
                     for (int i = 0; i < FaceTrackingSetup.mouthParameterNames.Length; i++)
                     {
+                        bool shouldShow = true;
+                        if (filterString != "")
+                        {
+                            shouldShow = true;
+                            foreach (var keyword in filterKeywords)
+                            {
+                                if (!FaceTrackingSetup.mouthParameterNames[i].ToLower().Contains(keyword.ToLower()))
+                                {
+                                    shouldShow = false;
+                                    continue;
+                                }
+                            }
+                            if (!shouldShow) continue;
+                        }
+
                         GUILayout.BeginVertical("Window");
 
                         GUILayout.BeginHorizontal("Box");
