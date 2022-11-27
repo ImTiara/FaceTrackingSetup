@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
-namespace ImTiara
+namespace ImTiara.FaceTrackingSetup
 {
+#pragma warning disable IDE0090 // Use 'new(...)'
     public sealed class FaceTrackingSetup : MonoBehaviour
     {
         public const string VERSION = "1.0.1";
@@ -129,7 +130,7 @@ namespace ImTiara
         #region Mouth
         public bool mouthEnable;
 
-        public TrackedMouth[] trackedMouths = new TrackedMouth[37];
+        public MouthAffector[] mouthAffectors = new MouthAffector[37];
 
         public static readonly string[] mouthParameterNames =
         {
@@ -173,30 +174,37 @@ namespace ImTiara
         };
         
         [Serializable]
-        public sealed class TrackedMouth
+        public sealed class MouthAffector
         {
             public Type type = Type.Float;
             
-            public List<string> blendShapes = new List<string>();
-            public List<float> weights = new List<float>();
-            
-            public void Add(string blendShape = NONE, float weight = 100.0f)
-            {
-                blendShapes.Add(blendShape);
-                weights.Add(weight);
-            }
+            public List<AffectedBlendshape> affectedBlendshapes = new List<AffectedBlendshape>();
 
-            public void Remove(int index)
+            public void Add(string blendShape)
             {
-                blendShapes.RemoveAt(index);
-                weights.RemoveAt(index);
+                if (blendShape == "") return;
+                affectedBlendshapes.Add(new AffectedBlendshape(blendShape));
             }
 
             public enum Type
             {
                 Float
             }
+
+            [Serializable]
+            public sealed class AffectedBlendshape
+            {
+                public string blendShape = NONE;
+                public float weight = 100;
+                public int selectedBSIndex = 0;
+
+                public AffectedBlendshape(string blendShape = NONE)
+                {
+                    this.blendShape = blendShape;
+                }
+            }
         }
         #endregion
     }
+#pragma warning restore IDE0090 // Use 'new(...)'
 }

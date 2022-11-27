@@ -5,15 +5,23 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using UnityScript.Lang;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
 using Object = UnityEngine.Object;
 
-namespace ImTiara
+namespace ImTiara.FaceTrackingSetup
 {
+#pragma warning disable IDE0090 // Use 'new(...)'
     [CustomEditor(typeof(FaceTrackingSetup))]
     public sealed class FaceTrackingSetup_Editor : Editor
     {
+        public static List<string> blendShapes = new List<string>();
+
+        public static readonly Color red = new Color(1.0f, 0.6f, 0.6f);
+        public static readonly Color yellow = new Color(1.0f, 1.0f, 0.6f);
+        public static readonly Color green = new Color(0.6f, 1.0f, 0.6f);
+
         public override void OnInspectorGUI()
         {
             Undo.RecordObject(target, "FTS Change");
@@ -57,6 +65,16 @@ namespace ImTiara
 
             fts.additive = (RuntimeAnimatorController)EditorGUILayout.ObjectField(new GUIContent("Additive Controller", "Only required if you use eye tracking that require eye bones instead of blendshapes."), fts.additive, typeof(RuntimeAnimatorController), false);
             fts.faceMesh = (SkinnedMeshRenderer)EditorGUILayout.ObjectField("Face Mesh", fts.faceMesh, typeof(SkinnedMeshRenderer), true);
+
+            if (fts.faceMesh != null && blendShapes.Count != fts.faceMesh.sharedMesh.blendShapeCount)
+            {
+                blendShapes.Clear();
+                blendShapes.Add(FaceTrackingSetup.NONE);
+                for (int i = 0; i < fts.faceMesh.sharedMesh.blendShapeCount; i++)
+                {
+                    blendShapes.Add(fts.faceMesh.sharedMesh.GetBlendShapeName(i));
+                }
+            }
 
             GUILayout.Space(10);
 
@@ -152,8 +170,6 @@ namespace ImTiara
                     case FaceTrackingSetup.EyeTrackingMode.BlendShape:
                         if (fts.faceMesh != null)
                         {
-                            List<string> blendShapes = new List<string>() { FaceTrackingSetup.NONE };
-
                             int selectedLeftLeftShapekeyIndex = 0;
                             int selectedLeftRightShapekeyIndex = 0;
                             int selectedLeftUpShapekeyIndex = 0;
@@ -164,24 +180,24 @@ namespace ImTiara
                             int selectedRightUpShapekeyIndex = 0;
                             int selectedRightDownShapekeyIndex = 0;
 
-                            for (int i = 0; i < fts.faceMesh.sharedMesh.blendShapeCount; i++)
+                            for (int i = 0; i < blendShapes.Count; i++)
                             {
-                                string name = fts.faceMesh.sharedMesh.GetBlendShapeName(i);
-                                blendShapes.Add(name);
+                                string name = blendShapes[i];
 
-                                if (name == fts.leftleftShapeKey) selectedLeftLeftShapekeyIndex = i + 1;
-                                if (name == fts.leftrightShapeKey) selectedLeftRightShapekeyIndex = i + 1;
-                                if (name == fts.leftupShapeKey) selectedLeftUpShapekeyIndex = i + 1;
-                                if (name == fts.leftdownShapeKey) selectedLeftDownShapekeyIndex = i + 1;
+                                if (name == fts.leftleftShapeKey) selectedLeftLeftShapekeyIndex = i;
+                                if (name == fts.leftrightShapeKey) selectedLeftRightShapekeyIndex = i;
+                                if (name == fts.leftupShapeKey) selectedLeftUpShapekeyIndex = i;
+                                if (name == fts.leftdownShapeKey) selectedLeftDownShapekeyIndex = i;
 
-                                if (name == fts.rightleftShapeKey) selectedRightLeftShapekeyIndex = i + 1;
-                                if (name == fts.rightrightShapeKey) selectedRightRightShapekeyIndex = i + 1;
-                                if (name == fts.rightupShapeKey) selectedRightUpShapekeyIndex = i + 1;
-                                if (name == fts.rightdownShapeKey) selectedRightDownShapekeyIndex = i + 1;
+                                if (name == fts.rightleftShapeKey) selectedRightLeftShapekeyIndex = i;
+                                if (name == fts.rightrightShapeKey) selectedRightRightShapekeyIndex = i;
+                                if (name == fts.rightupShapeKey) selectedRightUpShapekeyIndex = i;
+                                if (name == fts.rightdownShapeKey) selectedRightDownShapekeyIndex = i;
                             }
 
                             GUILayout.Space(10);
 
+                            GUI.backgroundColor = yellow;
                             if (GUILayout.Button("Auto Setup From ARKit"))
                             {
                                 fts.leftleftShapeKey = "eyeLookOutLeft";
@@ -196,52 +212,62 @@ namespace ImTiara
 
                                 return;
                             }
+                            GUI.backgroundColor = Color.white;
 
                             GUILayout.Space(10);
 
-                            GUILayout.BeginHorizontal();
-                            fts.leftleftShapeKey = blendShapes[EditorGUILayout.Popup("Left Eye - Left", selectedLeftLeftShapekeyIndex, blendShapes.ToArray())];
-                            fts.leftleftShapeKey = EditorGUILayout.TextField(fts.leftleftShapeKey, GUILayout.MaxWidth(150));
-                            GUILayout.EndHorizontal();
+                            string[] array = blendShapes.ToArray();
 
-                            GUILayout.BeginHorizontal();
-                            fts.leftrightShapeKey = blendShapes[EditorGUILayout.Popup("Left Eye - Right", selectedLeftRightShapekeyIndex, blendShapes.ToArray())];
-                            fts.leftrightShapeKey = EditorGUILayout.TextField(fts.leftrightShapeKey, GUILayout.MaxWidth(150));
-                            GUILayout.EndHorizontal();
+                            StringListSearchProvider.DrawSelectButton("Left Eye - Left", array, (a, b, _) =>
+                            {
+                                fts.leftleftShapeKey = a;
+                                selectedLeftLeftShapekeyIndex = b;
+                            }, selectedLeftLeftShapekeyIndex);
 
-                            GUILayout.BeginHorizontal();
-                            fts.leftupShapeKey = blendShapes[EditorGUILayout.Popup("Left Eye - Up", selectedLeftUpShapekeyIndex, blendShapes.ToArray())];
-                            fts.leftupShapeKey = EditorGUILayout.TextField(fts.leftupShapeKey, GUILayout.MaxWidth(150));
-                            GUILayout.EndHorizontal();
+                            StringListSearchProvider.DrawSelectButton("Left Eye - Right", array, (a, b, _) =>
+                            {
+                                fts.leftrightShapeKey = a;
+                                selectedLeftRightShapekeyIndex = b;
+                            }, selectedLeftRightShapekeyIndex);
 
-                            GUILayout.BeginHorizontal();
-                            fts.leftdownShapeKey = blendShapes[EditorGUILayout.Popup("Left Eye - Down", selectedLeftDownShapekeyIndex, blendShapes.ToArray())];
-                            fts.leftdownShapeKey = EditorGUILayout.TextField(fts.leftdownShapeKey, GUILayout.MaxWidth(150));
-                            GUILayout.EndHorizontal();
+                            StringListSearchProvider.DrawSelectButton("Left Eye - Up", array, (a, b, _) =>
+                            {
+                                fts.leftupShapeKey = a;
+                                selectedLeftUpShapekeyIndex = b;
+                            }, selectedLeftUpShapekeyIndex);
+
+                            StringListSearchProvider.DrawSelectButton("Left Eye - Down", array, (a, b, _) =>
+                            {
+                                fts.leftdownShapeKey = a;
+                                selectedLeftDownShapekeyIndex = b;
+                            }, selectedLeftDownShapekeyIndex);
 
 
                             GUILayout.Space(10);
 
+                            StringListSearchProvider.DrawSelectButton("Right Eye - Left", array, (a, b, _) =>
+                            {
+                                fts.rightleftShapeKey = a;
+                                selectedRightLeftShapekeyIndex = b;
+                            }, selectedRightLeftShapekeyIndex);
 
-                            GUILayout.BeginHorizontal();
-                            fts.rightleftShapeKey = blendShapes[EditorGUILayout.Popup("Right Eye - Left", selectedRightLeftShapekeyIndex, blendShapes.ToArray())];
-                            fts.rightleftShapeKey = EditorGUILayout.TextField(fts.rightleftShapeKey, GUILayout.MaxWidth(150));
-                            GUILayout.EndHorizontal();
+                            StringListSearchProvider.DrawSelectButton("Right Eye - Right", array, (a, b, _) =>
+                            {
+                                fts.rightrightShapeKey = a;
+                                selectedRightRightShapekeyIndex = b;
+                            }, selectedRightRightShapekeyIndex);
 
-                            GUILayout.BeginHorizontal();
-                            fts.rightrightShapeKey = blendShapes[EditorGUILayout.Popup("Right Eye - Right", selectedRightRightShapekeyIndex, blendShapes.ToArray())];
-                            fts.rightrightShapeKey = EditorGUILayout.TextField(fts.rightrightShapeKey, GUILayout.MaxWidth(150));
-                            GUILayout.EndHorizontal();
+                            StringListSearchProvider.DrawSelectButton("Right Eye - Up", array, (a, b, _) =>
+                            {
+                                fts.rightupShapeKey = a;
+                                selectedRightUpShapekeyIndex = b;
+                            }, selectedRightUpShapekeyIndex);
 
-                            GUILayout.BeginHorizontal();
-                            fts.rightupShapeKey = blendShapes[EditorGUILayout.Popup("Right Eye - Up", selectedRightUpShapekeyIndex, blendShapes.ToArray())];
-                            fts.rightupShapeKey = EditorGUILayout.TextField(fts.rightupShapeKey, GUILayout.MaxWidth(150));
-                            GUILayout.EndHorizontal();
-
-                            GUILayout.BeginHorizontal();
-                            fts.rightdownShapeKey = blendShapes[EditorGUILayout.Popup("Right Eye - Down", selectedRightDownShapekeyIndex, blendShapes.ToArray())];
-                            fts.rightdownShapeKey = EditorGUILayout.TextField(fts.rightdownShapeKey, GUILayout.MaxWidth(150));
-                            GUILayout.EndHorizontal();
+                            StringListSearchProvider.DrawSelectButton("Right Eye - Down", array, (a, b, _) =>
+                            {
+                                fts.rightdownShapeKey = a;
+                                selectedRightDownShapekeyIndex = b;
+                            }, selectedRightDownShapekeyIndex);
 
                             GUILayout.Space(10);
 
@@ -267,7 +293,7 @@ namespace ImTiara
 
                 GUILayout.Space(10);
 
-                GUI.contentColor = new Color(1.0f, 0.6f, 0.6f);
+                GUI.backgroundColor = red;
                 if (GUILayout.Button("Reset Eye Settings"))
                 {
                     if (EditorUtility.DisplayDialog("Face Tracking Setup", "Are you sure you want to reset the eye settings to the default values?", "Reset", "Cancel"))
@@ -287,8 +313,7 @@ namespace ImTiara
                         Save(fts);
                     }
                 }
-
-                GUI.contentColor = Color.white;
+                GUI.backgroundColor = Color.white;
 
                 GUILayout.EndVertical();
 
@@ -318,46 +343,52 @@ namespace ImTiara
                     case FaceTrackingSetup.BlinkingMode.BlendShape:
                         if (fts.faceMesh != null)
                         {
-                            List<string> blendShapes = new List<string>() { FaceTrackingSetup.NONE };
-
                             int selectedLeftBlinkShapekeyIndex = 0;
                             int selectedRightBlinkShapekeyIndex = 0;
 
                             int selectedLeftWideShapekeyIndex = 0;
                             int selectedRightWideShapekeyIndex = 0;
 
-                            for (int i = 0; i < fts.faceMesh.sharedMesh.blendShapeCount; i++)
+                            for (int i = 0; i < blendShapes.Count; i++)
                             {
-                                string name = fts.faceMesh.sharedMesh.GetBlendShapeName(i);
-                                blendShapes.Add(name);
+                                string name = blendShapes[i];
 
-                                if (name == fts.leftBlinkShapeKey) selectedLeftBlinkShapekeyIndex = i + 1;
-                                if (name == fts.rightBlinkShapeKey) selectedRightBlinkShapekeyIndex = i + 1;
-                                if (name == fts.leftWideShapeKey) selectedLeftWideShapekeyIndex = i + 1;
-                                if (name == fts.rightWideShapeKey) selectedRightWideShapekeyIndex = i + 1;
+                                if (name == fts.leftBlinkShapeKey) selectedLeftBlinkShapekeyIndex = i;
+                                if (name == fts.rightBlinkShapeKey) selectedRightBlinkShapekeyIndex = i;
+                                
+                                if (name == fts.leftWideShapeKey) selectedLeftWideShapekeyIndex = i;
+                                if (name == fts.rightWideShapeKey) selectedRightWideShapekeyIndex = i;
                             }
 
-                            GUILayout.BeginHorizontal();
-                            fts.leftBlinkShapeKey = blendShapes[EditorGUILayout.Popup("Left Blink", selectedLeftBlinkShapekeyIndex, blendShapes.ToArray())];
-                            fts.leftBlinkShapeKey = EditorGUILayout.TextField(fts.leftBlinkShapeKey, GUILayout.MaxWidth(150));
-                            GUILayout.EndHorizontal();
-
-                            GUILayout.BeginHorizontal();
-                            fts.rightBlinkShapeKey = blendShapes[EditorGUILayout.Popup("Right Blink", selectedRightBlinkShapekeyIndex, blendShapes.ToArray())];
-                            fts.rightBlinkShapeKey = EditorGUILayout.TextField(fts.rightBlinkShapeKey, GUILayout.MaxWidth(150));
-                            GUILayout.EndHorizontal();
+                            string[] array = blendShapes.ToArray();
 
                             GUILayout.Space(10);
 
-                            GUILayout.BeginHorizontal();
-                            fts.leftWideShapeKey = blendShapes[EditorGUILayout.Popup("Left Wide", selectedLeftWideShapekeyIndex, blendShapes.ToArray())];
-                            fts.leftWideShapeKey = EditorGUILayout.TextField(fts.leftWideShapeKey, GUILayout.MaxWidth(150));
-                            GUILayout.EndHorizontal();
+                            StringListSearchProvider.DrawSelectButton("Left Blink", array, (a, b, _) =>
+                            {
+                                fts.leftBlinkShapeKey = a;
+                                selectedLeftBlinkShapekeyIndex = b;
+                            }, selectedLeftBlinkShapekeyIndex);
 
-                            GUILayout.BeginHorizontal();
-                            fts.rightWideShapeKey = blendShapes[EditorGUILayout.Popup("Right Wide", selectedRightWideShapekeyIndex, blendShapes.ToArray())];
-                            fts.rightWideShapeKey = EditorGUILayout.TextField(fts.rightWideShapeKey, GUILayout.MaxWidth(150));
-                            GUILayout.EndHorizontal();
+                            StringListSearchProvider.DrawSelectButton("Right Blink", array, (a, b, _) =>
+                            {
+                                fts.rightBlinkShapeKey = a;
+                                selectedRightBlinkShapekeyIndex = b;
+                            }, selectedRightBlinkShapekeyIndex);
+
+                            GUILayout.Space(10);
+
+                            StringListSearchProvider.DrawSelectButton("Left Wide", array, (a, b, _) =>
+                            {
+                                fts.leftWideShapeKey = a;
+                                selectedLeftWideShapekeyIndex = b;
+                            }, selectedLeftWideShapekeyIndex);
+
+                            StringListSearchProvider.DrawSelectButton("Right Wide", array, (a, b, _) =>
+                            {
+                                fts.rightWideShapeKey = a;
+                                selectedRightWideShapekeyIndex = b;
+                            }, selectedRightWideShapekeyIndex);
                         }
                         else
                         {
@@ -384,7 +415,7 @@ namespace ImTiara
 
                 GUILayout.Space(10);
 
-                GUI.contentColor = new Color(1.0f, 0.6f, 0.6f);
+                GUI.backgroundColor = red;
                 if (GUILayout.Button("Reset Blink Settings"))
                 {
                     if (EditorUtility.DisplayDialog("Face Tracking Setup", "Are you sure you want to reset the blink settings to the default values?", "Reset", "Cancel"))
@@ -406,8 +437,7 @@ namespace ImTiara
                         Save(fts);
                     }
                 }
-
-                GUI.contentColor = Color.white;
+                GUI.backgroundColor = Color.white;
 
                 GUILayout.EndVertical();
 
@@ -435,29 +465,30 @@ namespace ImTiara
 
                     GUILayout.Space(10);
 
-                    List<string> blendShapes = new List<string>() { FaceTrackingSetup.NONE };
-
                     int selectedConstrictedShapekeyIndex = 0;
                     int selectedDilatedShapekeyIndex = 0;
 
-                    for (int i = 0; i < fts.faceMesh.sharedMesh.blendShapeCount; i++)
+                    for (int i = 0; i < blendShapes.Count; i++)
                     {
-                        string name = fts.faceMesh.sharedMesh.GetBlendShapeName(i);
-                        blendShapes.Add(name);
+                        string name = blendShapes[i];
 
-                        if (name == fts.constrictedShapeKey) selectedConstrictedShapekeyIndex = i + 1;
-                        if (name == fts.dilatedShapeKey) selectedDilatedShapekeyIndex = i + 1;
+                        if (name == fts.constrictedShapeKey) selectedConstrictedShapekeyIndex = i;
+                        if (name == fts.dilatedShapeKey) selectedDilatedShapekeyIndex = i;
                     }
 
-                    GUILayout.BeginHorizontal();
-                    fts.constrictedShapeKey = blendShapes[EditorGUILayout.Popup("Constricted", selectedConstrictedShapekeyIndex, blendShapes.ToArray())];
-                    fts.constrictedShapeKey = EditorGUILayout.TextField(fts.constrictedShapeKey, GUILayout.MaxWidth(150));
-                    GUILayout.EndHorizontal();
+                    string[] array = blendShapes.ToArray();
 
-                    GUILayout.BeginHorizontal();
-                    fts.dilatedShapeKey = blendShapes[EditorGUILayout.Popup("Dilated", selectedDilatedShapekeyIndex, blendShapes.ToArray())];
-                    fts.dilatedShapeKey = EditorGUILayout.TextField(fts.dilatedShapeKey, GUILayout.MaxWidth(150));
-                    GUILayout.EndHorizontal();
+                    StringListSearchProvider.DrawSelectButton("Constricted", array, (a, b, _) =>
+                    {
+                        fts.constrictedShapeKey = a;
+                        selectedConstrictedShapekeyIndex = b;
+                    }, selectedConstrictedShapekeyIndex);
+
+                    StringListSearchProvider.DrawSelectButton("Dilated", array, (a, b, _) =>
+                    {
+                        fts.dilatedShapeKey = a;
+                        selectedDilatedShapekeyIndex = b;
+                    }, selectedDilatedShapekeyIndex);
 
                     GUILayout.Space(10);
 
@@ -473,7 +504,7 @@ namespace ImTiara
 
                 GUI.enabled = fts.enablePupils;
 
-                GUI.contentColor = new Color(1.0f, 0.6f, 0.6f);
+                GUI.backgroundColor = red;
                 if (GUILayout.Button("Reset Pupil Settings"))
                 {
                     if (EditorUtility.DisplayDialog("Face Tracking Setup", "Are you sure you want to reset the pupil settings to the default values?", "Reset", "Cancel"))
@@ -488,8 +519,7 @@ namespace ImTiara
                         Save(fts);
                     }
                 }
-
-                GUI.contentColor = Color.white;
+                GUI.backgroundColor = Color.white;
 
                 GUILayout.EndVertical();
 
@@ -515,80 +545,84 @@ namespace ImTiara
                 {
                     GUI.enabled = fts.mouthEnable;
 
+                    GUI.backgroundColor = yellow;
                     if (GUILayout.Button("Auto Setup From ARKit"))
                     {
-                        if (EditorUtility.DisplayDialog("Face Tracking Setup", "Are you sure you want to run the auto setup? This will reset you current mouth tracking settings\n\nThis feature is experimental and will be tweaked in the future.", "Setup", "Cancel"))
+                        if (EditorUtility.DisplayDialog("Face Tracking Setup", "Are you sure you want to run the auto setup? This will reset you current mouth tracking settings.\n\nThis feature is experimental and will be tweaked in the future.", "Setup", "Cancel"))
                         {
-                            fts.trackedMouths = new FaceTrackingSetup.TrackedMouth[37];
+                            fts.mouthAffectors = new FaceTrackingSetup.MouthAffector[37];
                             Save(fts);
 
                             for (int i = 0; i < FaceTrackingSetup.mouthParameterNames.Length; i++)
                             {
                                 switch (FaceTrackingSetup.mouthParameterNames[i])
                                 {
-                                    case "JawRight": fts.trackedMouths[i].Add("jawRight"); break;
-                                    case "JawLeft": fts.trackedMouths[i].Add("jawLeft"); break;
-                                    case "JawForward": fts.trackedMouths[i].Add("jawForward"); break;
-                                    case "JawOpen": fts.trackedMouths[i].Add("jawOpen"); break;
-                                    case "MouthApeShape": fts.trackedMouths[i].Add(""); break;
-                                    case "MouthUpperRight": fts.trackedMouths[i].Add("mouthUpperUpRight"); break;
-                                    case "MouthUpperLeft": fts.trackedMouths[i].Add("mouthUpperUpLeft"); break;
-                                    case "MouthLowerRight": fts.trackedMouths[i].Add("mouthFrownRight"); break;
-                                    case "MouthLowerLeft": fts.trackedMouths[i].Add("mouthFrownLeft"); break;
-                                    case "MouthUpperOverturn": fts.trackedMouths[i].Add(""); break;
-                                    case "MouthLowerOverturn": fts.trackedMouths[i].Add(""); break;
-                                    case "MouthPout": fts.trackedMouths[i].Add("mouthPucker"); break;
+                                    case "JawRight": fts.mouthAffectors[i].Add("jawRight"); break;
+                                    case "JawLeft": fts.mouthAffectors[i].Add("jawLeft"); break;
+                                    case "JawForward": fts.mouthAffectors[i].Add("jawForward"); break;
+                                    case "JawOpen": fts.mouthAffectors[i].Add("jawOpen"); break;
+                                    case "MouthApeShape": fts.mouthAffectors[i].Add(""); break;
+                                    case "MouthUpperRight": fts.mouthAffectors[i].Add("mouthUpperUpRight"); break;
+                                    case "MouthUpperLeft": fts.mouthAffectors[i].Add("mouthUpperUpLeft"); break;
+                                    case "MouthLowerRight": fts.mouthAffectors[i].Add("mouthFrownRight"); break;
+                                    case "MouthLowerLeft": fts.mouthAffectors[i].Add("mouthFrownLeft"); break;
+                                    case "MouthUpperOverturn": fts.mouthAffectors[i].Add(""); break;
+                                    case "MouthLowerOverturn": fts.mouthAffectors[i].Add(""); break;
+                                    case "MouthPout": fts.mouthAffectors[i].Add("mouthPucker"); break;
                                     case "MouthSmileRight":
-                                        fts.trackedMouths[i].Add("mouthSmileRight");
-                                        fts.trackedMouths[i].Add("eyeSquintRight");
+                                        fts.mouthAffectors[i].Add("mouthSmileRight");
+                                        fts.mouthAffectors[i].Add("eyeSquintRight");
                                         break;
                                     case "MouthSmileLeft":
-                                        fts.trackedMouths[i].Add("mouthSmileLeft");
-                                        fts.trackedMouths[i].Add("eyeSquintLeft");
+                                        fts.mouthAffectors[i].Add("mouthSmileLeft");
+                                        fts.mouthAffectors[i].Add("eyeSquintLeft");
                                         break;
-                                    case "MouthSadRight": fts.trackedMouths[i].Add("mouthFrownRight"); break;
-                                    case "MouthSadLeft": fts.trackedMouths[i].Add("mouthFrownLeft"); break;
-                                    case "CheekPuffRight": fts.trackedMouths[i].Add(""); break;
-                                    case "CheekPuffLeft": fts.trackedMouths[i].Add(""); break;
-                                    case "CheekSuck": fts.trackedMouths[i].Add(""); break;
-                                    case "MouthUpperUpRight": fts.trackedMouths[i].Add("mouthUpperUpRight"); break;
-                                    case "MouthUpperUpLeft": fts.trackedMouths[i].Add("mouthUpperUpLeft"); break;
-                                    case "MouthLowerDownRight": fts.trackedMouths[i].Add("mouthLowerDownRight"); break;
-                                    case "MouthLowerDownLeft": fts.trackedMouths[i].Add("mouthLowerDownLeft"); break;
-                                    case "MouthUpperInside": fts.trackedMouths[i].Add("mouthShrugLower"); break;
-                                    case "MouthLowerInside": fts.trackedMouths[i].Add(""); break;
-                                    case "MouthLowerOverlay": fts.trackedMouths[i].Add(""); break;
-                                    case "TongueLongStep1": fts.trackedMouths[i].Add(""); break;
-                                    case "TongueLongStep2": fts.trackedMouths[i].Add("tongueOut"); break;
-                                    case "TongueDown": fts.trackedMouths[i].Add("tongueCurlDown"); break;
-                                    case "TongueUp": fts.trackedMouths[i].Add(""); break;
-                                    case "TongueRight": fts.trackedMouths[i].Add(""); break;
-                                    case "TongueLeft": fts.trackedMouths[i].Add(""); break;
-                                    case "TongueRoll": fts.trackedMouths[i].Add("tongueCurlUp"); break;
-                                    case "TongueUpLeftMorph": fts.trackedMouths[i].Add(""); break;
-                                    case "TongueUpRightMorph": fts.trackedMouths[i].Add(""); break;
-                                    case "TongueDownLeftMorph": fts.trackedMouths[i].Add(""); break;
-                                    case "TongueDownRightMorph": fts.trackedMouths[i].Add(""); break;
+                                    case "MouthSadRight": fts.mouthAffectors[i].Add("mouthFrownRight"); break;
+                                    case "MouthSadLeft": fts.mouthAffectors[i].Add("mouthFrownLeft"); break;
+                                    case "CheekPuffRight": fts.mouthAffectors[i].Add(""); break;
+                                    case "CheekPuffLeft": fts.mouthAffectors[i].Add(""); break;
+                                    case "CheekSuck": fts.mouthAffectors[i].Add(""); break;
+                                    case "MouthUpperUpRight": fts.mouthAffectors[i].Add("mouthUpperUpRight"); break;
+                                    case "MouthUpperUpLeft": fts.mouthAffectors[i].Add("mouthUpperUpLeft"); break;
+                                    case "MouthLowerDownRight": fts.mouthAffectors[i].Add("mouthLowerDownRight"); break;
+                                    case "MouthLowerDownLeft": fts.mouthAffectors[i].Add("mouthLowerDownLeft"); break;
+                                    case "MouthUpperInside": fts.mouthAffectors[i].Add("mouthShrugLower"); break;
+                                    case "MouthLowerInside": fts.mouthAffectors[i].Add(""); break;
+                                    case "MouthLowerOverlay": fts.mouthAffectors[i].Add(""); break;
+                                    case "TongueLongStep1": fts.mouthAffectors[i].Add(""); break;
+                                    case "TongueLongStep2": fts.mouthAffectors[i].Add("tongueOut"); break;
+                                    case "TongueDown": fts.mouthAffectors[i].Add("tongueCurlDown"); break;
+                                    case "TongueUp": fts.mouthAffectors[i].Add(""); break;
+                                    case "TongueRight": fts.mouthAffectors[i].Add(""); break;
+                                    case "TongueLeft": fts.mouthAffectors[i].Add(""); break;
+                                    case "TongueRoll": fts.mouthAffectors[i].Add("tongueCurlUp"); break;
+                                    case "TongueUpLeftMorph": fts.mouthAffectors[i].Add(""); break;
+                                    case "TongueUpRightMorph": fts.mouthAffectors[i].Add(""); break;
+                                    case "TongueDownLeftMorph": fts.mouthAffectors[i].Add(""); break;
+                                    case "TongueDownRightMorph": fts.mouthAffectors[i].Add(""); break;
                                 }
                             }
 
                             Save(fts);
                         }
                     }
+                    GUI.backgroundColor = Color.white;
 
-                    GUI.contentColor = new Color(1.0f, 0.6f, 0.6f);
+                    GUI.backgroundColor = red;
                     if (GUILayout.Button("Reset Mouth Tracking Settings"))
                     {
                         if (EditorUtility.DisplayDialog("Face Tracking Setup", "Are you sure you want to reset the mouth settings to the default values?", "Reset", "Cancel"))
                         {
-                            fts.trackedMouths = new FaceTrackingSetup.TrackedMouth[37];
+                            fts.mouthAffectors = new FaceTrackingSetup.MouthAffector[37];
                             
                             Save(fts);
                         }
                     }
-                    GUI.contentColor = Color.white;
+                    GUI.backgroundColor = Color.white;
 
                     GUILayout.Space(10);
+
+                    string[] array = blendShapes.ToArray();
 
                     for (int i = 0; i < FaceTrackingSetup.mouthParameterNames.Length; i++)
                     {
@@ -602,30 +636,48 @@ namespace ImTiara
 
                         GUILayout.Space(10);
 
-                        fts.trackedMouths[i].type = (FaceTrackingSetup.TrackedMouth.Type)EditorGUILayout.EnumPopup(fts.trackedMouths[i].type);
+                        fts.mouthAffectors[i].type = (FaceTrackingSetup.MouthAffector.Type)EditorGUILayout.EnumPopup("Parameter Type", fts.mouthAffectors[i].type);
 
                         GUILayout.Space(10);
 
-                        for (int i2 = 0; i2 < fts.trackedMouths[i].blendShapes.Count; i2++)
+                        for (int i2 = 0; i2 < fts.mouthAffectors[i].affectedBlendshapes.Count; i2++)
                         {
-                            GUILayout.BeginHorizontal("Window");
-                            GUILayout.Label("Blendshape");
-                            fts.trackedMouths[i].blendShapes[i2] = EditorGUILayout.TextField(fts.trackedMouths[i].blendShapes[i2], GUILayout.MaxWidth(150));
-                            GUILayout.Label("Weight");
-                            fts.trackedMouths[i].weights[i2] = EditorGUILayout.Slider(fts.trackedMouths[i].weights[i2], 0, 100);
+                            GUI.backgroundColor = Color.gray;
+                            GUILayout.BeginVertical("Window");
+                            GUI.backgroundColor = Color.white;
+
+                            for (int i3 = 0; i3 < blendShapes.Count; i3++)
+                            {
+                                string name = blendShapes[i3];
+                                
+                                if (name == fts.mouthAffectors[i].affectedBlendshapes[i2].blendShape) fts.mouthAffectors[i].affectedBlendshapes[i2].selectedBSIndex = i3;
+                            }
+
+                            StringListSearchProvider.DrawSelectButton("Blendshape", array, (a, b, indexes) =>
+                            {
+                                fts.mouthAffectors[indexes[0]].affectedBlendshapes[indexes[1]].blendShape = a;
+                                fts.mouthAffectors[indexes[0]].affectedBlendshapes[indexes[1]].selectedBSIndex = b;
+                            }, fts.mouthAffectors[i].affectedBlendshapes[i2].selectedBSIndex, i, i2);
+
+                            fts.mouthAffectors[i].affectedBlendshapes[i2].weight = EditorGUILayout.Slider("Weight", fts.mouthAffectors[i].affectedBlendshapes[i2].weight, 0, 100);
+                            GUI.backgroundColor = red;
                             if (GUILayout.Button("Remove"))
                             {
-                                fts.trackedMouths[i].Remove(i2);
+                                fts.mouthAffectors[i].affectedBlendshapes.RemoveAt(i2);
                                 return;
                             }
-                            GUILayout.EndHorizontal();
+                            GUI.backgroundColor = Color.white;
+                            GUILayout.EndVertical();
                             GUILayout.Space(10);
                         }
+
+                        GUI.backgroundColor = green;
                         if (GUILayout.Button("Add Affected Blendshape"))
                         {
-                            fts.trackedMouths[i].Add();
+                            fts.mouthAffectors[i].affectedBlendshapes.Add(new FaceTrackingSetup.MouthAffector.AffectedBlendshape());
                             return;
                         }
+                        GUI.backgroundColor = Color.white;
 
                         GUILayout.EndVertical();
 
@@ -649,7 +701,9 @@ namespace ImTiara
 
             GUILayout.Space(10);
 
-            GUI.contentColor = new Color(0.6f, 1.0f, 0.6f);
+            GUILayout.BeginHorizontal();
+
+            GUI.backgroundColor = green;
             if (GUILayout.Button("Generate", GUILayout.Height(50)))
             {
                 if (EditorUtility.DisplayDialog("Face Tracking Setup", "Confirm setup?\n\nThis will clear existing face tracking stuff from this avatar.", "Generate", "Cancel"))
@@ -657,14 +711,15 @@ namespace ImTiara
                     Setup();
                 }
             }
-            GUI.contentColor = Color.white;
+            GUI.backgroundColor = Color.white;
+            
             GUI.enabled = true;
 
             GUILayout.Space(10);
 
             GUI.enabled = fts.expressionParameters != null && fts.fx != null;
 
-            GUI.contentColor = new Color(1.0f, 0.6f, 0.6f);
+            GUI.backgroundColor = red;
             if (GUILayout.Button("Remove", GUILayout.Height(50)))
             {
                 if (EditorUtility.DisplayDialog("Face Tracking Setup", "Are you sure you want to remove the face tracking setup?", "Remove", "Cancel"))
@@ -674,8 +729,10 @@ namespace ImTiara
                     Save(fts, fts.expressionParameters, fts.additive, fts.fx);
                 }
             }
-            GUI.contentColor = Color.white;
+            GUI.backgroundColor = Color.white;
             GUI.enabled = true;
+
+            GUILayout.EndHorizontal();
         }
 
         #region Creators
@@ -724,14 +781,15 @@ namespace ImTiara
 
                 Save(fts, fts.expressionParameters, fts.additive, fts.fx);
 
+                EditorUtility.ClearProgressBar();
                 EditorUtility.DisplayDialog("Face Tracking Setup", "Tracking created!", "Okay");
             }
             catch (Exception e)
             {
                 Debug.LogError("Error creating face tracking: " + e);
+                EditorUtility.ClearProgressBar();
                 EditorUtility.DisplayDialog("Face Tracking Setup", "An error occured while creating the face tracking.\n\nCheck the console for further details.", "Okay");
             }
-            EditorUtility.ClearProgressBar();
         }
 
         public static void CreateEyeTracking(FaceTrackingSetup fts, AnimatorController additive, AnimatorController fx, AnimationClip _do_nothing)
@@ -1045,21 +1103,24 @@ namespace ImTiara
 
                 for (int i = 0; i < FaceTrackingSetup.mouthParameterNames.Length; i++)
                 {
-                    var trackedMouth = fts.trackedMouths[i];
+                    var trackedMouth = fts.mouthAffectors[i];
 
-                    int count = trackedMouth.blendShapes.Count;
+                    int count = trackedMouth.affectedBlendshapes.Count;
                     if (count == 0) continue;
-                    
+
                     AnimationClip clip = new AnimationClip();
                     for (int i2 = 0; i2 < count; i2++)
                     {
-                        clip.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{trackedMouth.blendShapes[i2]}", AnimationCurve.Constant(0, 0, trackedMouth.weights[i2]));
+                        if (trackedMouth.affectedBlendshapes[i2].blendShape.Length == 0 || trackedMouth.affectedBlendshapes[i2].blendShape == FaceTrackingSetup.NONE) continue;
+                        
+                        clip.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{trackedMouth.affectedBlendshapes[i2].blendShape}", AnimationCurve.Constant(0, 0, trackedMouth.affectedBlendshapes[i2].weight));
                     }
+                    
                     AssetDatabase.CreateAsset(clip, $"{fts.outputPath}/Mouth/{FaceTrackingSetup.mouthParameterNames[i]}.anim");
 
                     switch (trackedMouth.type)
                     {
-                        case FaceTrackingSetup.TrackedMouth.Type.Float:
+                        case FaceTrackingSetup.MouthAffector.Type.Float:
                             var layer = AddLayer(fx, FaceTrackingSetup.mouthParameterNames[i], 1.0f);
 
                             AddVRCParameter(fts.expressionParameters, FaceTrackingSetup.mouthParameterNames[i], VRCExpressionParameters.ValueType.Float, 0.0f);
@@ -1291,4 +1352,5 @@ namespace ImTiara
         }
         #endregion
     }
+#pragma warning restore IDE0090 // Use 'new(...)'
 }
