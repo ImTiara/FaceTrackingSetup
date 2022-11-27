@@ -18,7 +18,6 @@ Each component allows you to easily tweak the settings to your needs.
 3. Add the "FaceTrackingSetup" component to it.
 
 # TODO
-- Improvements to the Mouth Tracking section.
 - Binary parameter support for the Mouth Tracking.
 
 # Screenshots
