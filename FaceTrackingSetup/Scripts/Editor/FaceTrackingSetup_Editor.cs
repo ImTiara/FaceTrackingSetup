@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
-using UnityScript.Lang;
 using VRC.SDK3.Avatars.ScriptableObjects;
 
 using Object = UnityEngine.Object;
@@ -16,12 +15,11 @@ namespace ImTiara.FaceTrackingSetup
     [CustomEditor(typeof(FaceTrackingSetup))]
     public sealed class FaceTrackingSetup_Editor : Editor
     {
-        public static List<string> blendShapes = new List<string>();
+        public static string[] blendShapes = new string[0];
 
         public static readonly Color red = new Color(1.0f, 0.6f, 0.6f);
         public static readonly Color yellow = new Color(1.0f, 1.0f, 0.6f);
         public static readonly Color green = new Color(0.6f, 1.0f, 0.6f);
-
 
         public static string[] filterKeywords = new string[0];
         public static string filterString = "";
@@ -70,14 +68,15 @@ namespace ImTiara.FaceTrackingSetup
             fts.additive = (RuntimeAnimatorController)EditorGUILayout.ObjectField(new GUIContent("Additive Controller", "Only required if you use eye tracking that require eye bones instead of blendshapes."), fts.additive, typeof(RuntimeAnimatorController), false);
             fts.faceMesh = (SkinnedMeshRenderer)EditorGUILayout.ObjectField("Face Mesh", fts.faceMesh, typeof(SkinnedMeshRenderer), true);
 
-            if (fts.faceMesh != null && blendShapes.Count != fts.faceMesh.sharedMesh.blendShapeCount)
+            if (fts.faceMesh != null && blendShapes.Length != fts.faceMesh.sharedMesh.blendShapeCount + 1)
             {
-                blendShapes.Clear();
-                blendShapes.Add(FaceTrackingSetup.NONE);
+                List<string> tempList = new List<string>() { FaceTrackingSetup.NONE };
                 for (int i = 0; i < fts.faceMesh.sharedMesh.blendShapeCount; i++)
                 {
-                    blendShapes.Add(fts.faceMesh.sharedMesh.GetBlendShapeName(i));
+                    tempList.Add(fts.faceMesh.sharedMesh.GetBlendShapeName(i));
                 }
+                
+                blendShapes = tempList.ToArray();
             }
 
             GUILayout.Space(10);
@@ -184,7 +183,7 @@ namespace ImTiara.FaceTrackingSetup
                             int selectedRightUpShapekeyIndex = 0;
                             int selectedRightDownShapekeyIndex = 0;
 
-                            for (int i = 0; i < blendShapes.Count; i++)
+                            for (int i = 0; i < blendShapes.Length; i++)
                             {
                                 string name = blendShapes[i];
 
@@ -220,27 +219,25 @@ namespace ImTiara.FaceTrackingSetup
 
                             GUILayout.Space(10);
 
-                            string[] array = blendShapes.ToArray();
-
-                            StringListSearchProvider.DrawSelectButton("Left Eye - Left", array, (a, b, _) =>
+                            StringListSearchProvider.DrawSelectButton("Left Eye - Left", blendShapes, (a, b, _) =>
                             {
                                 fts.leftleftShapeKey = a;
                                 selectedLeftLeftShapekeyIndex = b;
                             }, selectedLeftLeftShapekeyIndex);
 
-                            StringListSearchProvider.DrawSelectButton("Left Eye - Right", array, (a, b, _) =>
+                            StringListSearchProvider.DrawSelectButton("Left Eye - Right", blendShapes, (a, b, _) =>
                             {
                                 fts.leftrightShapeKey = a;
                                 selectedLeftRightShapekeyIndex = b;
                             }, selectedLeftRightShapekeyIndex);
 
-                            StringListSearchProvider.DrawSelectButton("Left Eye - Up", array, (a, b, _) =>
+                            StringListSearchProvider.DrawSelectButton("Left Eye - Up", blendShapes, (a, b, _) =>
                             {
                                 fts.leftupShapeKey = a;
                                 selectedLeftUpShapekeyIndex = b;
                             }, selectedLeftUpShapekeyIndex);
 
-                            StringListSearchProvider.DrawSelectButton("Left Eye - Down", array, (a, b, _) =>
+                            StringListSearchProvider.DrawSelectButton("Left Eye - Down", blendShapes, (a, b, _) =>
                             {
                                 fts.leftdownShapeKey = a;
                                 selectedLeftDownShapekeyIndex = b;
@@ -249,25 +246,25 @@ namespace ImTiara.FaceTrackingSetup
 
                             GUILayout.Space(10);
 
-                            StringListSearchProvider.DrawSelectButton("Right Eye - Left", array, (a, b, _) =>
+                            StringListSearchProvider.DrawSelectButton("Right Eye - Left", blendShapes, (a, b, _) =>
                             {
                                 fts.rightleftShapeKey = a;
                                 selectedRightLeftShapekeyIndex = b;
                             }, selectedRightLeftShapekeyIndex);
 
-                            StringListSearchProvider.DrawSelectButton("Right Eye - Right", array, (a, b, _) =>
+                            StringListSearchProvider.DrawSelectButton("Right Eye - Right", blendShapes, (a, b, _) =>
                             {
                                 fts.rightrightShapeKey = a;
                                 selectedRightRightShapekeyIndex = b;
                             }, selectedRightRightShapekeyIndex);
 
-                            StringListSearchProvider.DrawSelectButton("Right Eye - Up", array, (a, b, _) =>
+                            StringListSearchProvider.DrawSelectButton("Right Eye - Up", blendShapes, (a, b, _) =>
                             {
                                 fts.rightupShapeKey = a;
                                 selectedRightUpShapekeyIndex = b;
                             }, selectedRightUpShapekeyIndex);
 
-                            StringListSearchProvider.DrawSelectButton("Right Eye - Down", array, (a, b, _) =>
+                            StringListSearchProvider.DrawSelectButton("Right Eye - Down", blendShapes, (a, b, _) =>
                             {
                                 fts.rightdownShapeKey = a;
                                 selectedRightDownShapekeyIndex = b;
@@ -353,7 +350,7 @@ namespace ImTiara.FaceTrackingSetup
                             int selectedLeftWideShapekeyIndex = 0;
                             int selectedRightWideShapekeyIndex = 0;
 
-                            for (int i = 0; i < blendShapes.Count; i++)
+                            for (int i = 0; i < blendShapes.Length; i++)
                             {
                                 string name = blendShapes[i];
 
@@ -364,17 +361,15 @@ namespace ImTiara.FaceTrackingSetup
                                 if (name == fts.rightWideShapeKey) selectedRightWideShapekeyIndex = i;
                             }
 
-                            string[] array = blendShapes.ToArray();
-
                             GUILayout.Space(10);
 
-                            StringListSearchProvider.DrawSelectButton("Left Blink", array, (a, b, _) =>
+                            StringListSearchProvider.DrawSelectButton("Left Blink", blendShapes, (a, b, _) =>
                             {
                                 fts.leftBlinkShapeKey = a;
                                 selectedLeftBlinkShapekeyIndex = b;
                             }, selectedLeftBlinkShapekeyIndex);
 
-                            StringListSearchProvider.DrawSelectButton("Right Blink", array, (a, b, _) =>
+                            StringListSearchProvider.DrawSelectButton("Right Blink", blendShapes, (a, b, _) =>
                             {
                                 fts.rightBlinkShapeKey = a;
                                 selectedRightBlinkShapekeyIndex = b;
@@ -382,13 +377,13 @@ namespace ImTiara.FaceTrackingSetup
 
                             GUILayout.Space(10);
 
-                            StringListSearchProvider.DrawSelectButton("Left Wide", array, (a, b, _) =>
+                            StringListSearchProvider.DrawSelectButton("Left Wide", blendShapes, (a, b, _) =>
                             {
                                 fts.leftWideShapeKey = a;
                                 selectedLeftWideShapekeyIndex = b;
                             }, selectedLeftWideShapekeyIndex);
 
-                            StringListSearchProvider.DrawSelectButton("Right Wide", array, (a, b, _) =>
+                            StringListSearchProvider.DrawSelectButton("Right Wide", blendShapes, (a, b, _) =>
                             {
                                 fts.rightWideShapeKey = a;
                                 selectedRightWideShapekeyIndex = b;
@@ -472,7 +467,7 @@ namespace ImTiara.FaceTrackingSetup
                     int selectedConstrictedShapekeyIndex = 0;
                     int selectedDilatedShapekeyIndex = 0;
 
-                    for (int i = 0; i < blendShapes.Count; i++)
+                    for (int i = 0; i < blendShapes.Length; i++)
                     {
                         string name = blendShapes[i];
 
@@ -480,15 +475,13 @@ namespace ImTiara.FaceTrackingSetup
                         if (name == fts.dilatedShapeKey) selectedDilatedShapekeyIndex = i;
                     }
 
-                    string[] array = blendShapes.ToArray();
-
-                    StringListSearchProvider.DrawSelectButton("Constricted", array, (a, b, _) =>
+                    StringListSearchProvider.DrawSelectButton("Constricted", blendShapes, (a, b, _) =>
                     {
                         fts.constrictedShapeKey = a;
                         selectedConstrictedShapekeyIndex = b;
                     }, selectedConstrictedShapekeyIndex);
 
-                    StringListSearchProvider.DrawSelectButton("Dilated", array, (a, b, _) =>
+                    StringListSearchProvider.DrawSelectButton("Dilated", blendShapes, (a, b, _) =>
                     {
                         fts.dilatedShapeKey = a;
                         selectedDilatedShapekeyIndex = b;
@@ -639,7 +632,6 @@ namespace ImTiara.FaceTrackingSetup
 
                     GUILayout.Space(10);
 
-                    string[] array = blendShapes.ToArray();
                     for (int i = 0; i < FaceTrackingSetup.mouthParameterNames.Length; i++)
                     {
                         bool shouldShow = true;
@@ -651,7 +643,6 @@ namespace ImTiara.FaceTrackingSetup
                                 if (!FaceTrackingSetup.mouthParameterNames[i].ToLower().Contains(keyword.ToLower()))
                                 {
                                     shouldShow = false;
-                                    continue;
                                 }
                             }
                             if (!shouldShow) continue;
@@ -677,14 +668,15 @@ namespace ImTiara.FaceTrackingSetup
                             GUILayout.BeginVertical("Window");
                             GUI.backgroundColor = Color.white;
 
-                            for (int i3 = 0; i3 < blendShapes.Count; i3++)
+                            for (int i3 = 0; i3 < blendShapes.Length; i3++)
                             {
-                                string name = blendShapes[i3];
-                                
-                                if (name == fts.mouthAffectors[i].affectedBlendshapes[i2].blendShape) fts.mouthAffectors[i].affectedBlendshapes[i2].selectedBSIndex = i3;
+                                if (blendShapes[i3] == fts.mouthAffectors[i].affectedBlendshapes[i2].blendShape)
+                                {
+                                    fts.mouthAffectors[i].affectedBlendshapes[i2].selectedBSIndex = i3;
+                                }
                             }
 
-                            StringListSearchProvider.DrawSelectButton("Blendshape", array, (a, b, indexes) =>
+                            StringListSearchProvider.DrawSelectButton("Blendshape", blendShapes, (a, b, indexes) =>
                             {
                                 fts.mouthAffectors[indexes[0]].affectedBlendshapes[indexes[1]].blendShape = a;
                                 fts.mouthAffectors[indexes[0]].affectedBlendshapes[indexes[1]].selectedBSIndex = b;

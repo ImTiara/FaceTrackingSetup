@@ -103,11 +103,10 @@ namespace ImTiara.FaceTrackingSetup
                             if (!value.ToLower().Contains(keyword.ToLower()))
                             {
                                 shouldShow = false;
-                                continue;
                             }
                         }
+                        if (!shouldShow) continue;
                     }
-                    if (!shouldShow) continue;
 
                     if (i == selectedIndex) GUI.backgroundColor = FaceTrackingSetup_Editor.green;
                     if (GUILayout.Button(value))
