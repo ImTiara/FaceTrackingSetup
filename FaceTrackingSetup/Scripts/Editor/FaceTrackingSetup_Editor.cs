@@ -994,17 +994,20 @@ namespace ImTiara.FaceTrackingSetup
                         eyeLeftIdle = new AnimationClip();
                         eyeRightIdle = new AnimationClip();
 
-
+                        eyeLeftBlink.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
                         eyeLeftBlink.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftBlinkShapeKey}", AnimationCurve.Constant(0, 0, 100));
                         AssetDatabase.CreateAsset(eyeLeftBlink, $"{fts.outputPath}/Blinking/Eye_Left_Blink.anim");
 
+                        eyeRightBlink.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
                         eyeRightBlink.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightBlinkShapeKey}", AnimationCurve.Constant(0, 0, 100));
                         AssetDatabase.CreateAsset(eyeRightBlink, $"{fts.outputPath}/Blinking/Eye_Right_Blink.anim");
 
                         eyeLeftWide.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftWideShapeKey}", AnimationCurve.Constant(0, 0, 100));
+                        eyeLeftWide.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftBlinkShapeKey}", AnimationCurve.Constant(0, 0, 0));
                         AssetDatabase.CreateAsset(eyeLeftWide, $"{fts.outputPath}/Blinking/Eye_Left_Wide.anim");
 
                         eyeRightWide.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightWideShapeKey}", AnimationCurve.Constant(0, 0, 100));
+                        eyeRightWide.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightBlinkShapeKey}", AnimationCurve.Constant(0, 0, 0));
                         AssetDatabase.CreateAsset(eyeRightWide, $"{fts.outputPath}/Blinking/Eye_Right_Wide.anim");
 
                         eyeLeftIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
@@ -1118,12 +1121,14 @@ namespace ImTiara.FaceTrackingSetup
                 AnimationClip eyeConstricted = new AnimationClip();
 
                 eyeDilated.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.dilatedShapeKey}", AnimationCurve.Constant(0, 0, 100));
+                eyeDilated.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.constrictedShapeKey}", AnimationCurve.Constant(0, 0, 0));
                 AssetDatabase.CreateAsset(eyeDilated, $"{fts.outputPath}/Pupils/Eye_Dilated.anim");
 
                 eyeNormal.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.dilatedShapeKey}", AnimationCurve.Constant(0, 0, 0));
                 eyeNormal.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.constrictedShapeKey}", AnimationCurve.Constant(0, 0, 0));
                 AssetDatabase.CreateAsset(eyeNormal, $"{fts.outputPath}/Pupils/Eye_Normal.anim");
 
+                eyeConstricted.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.dilatedShapeKey}", AnimationCurve.Constant(0, 0, 0));
                 eyeConstricted.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.constrictedShapeKey}", AnimationCurve.Constant(0, 0, 100));
                 AssetDatabase.CreateAsset(eyeConstricted, $"{fts.outputPath}/Pupils/Eye_Constricted.anim");
 
