@@ -8,7 +8,7 @@ namespace ImTiara.FaceTrackingSetup
 #pragma warning disable IDE0090 // Use 'new(...)'
     public sealed class FaceTrackingSetup : MonoBehaviour
     {
-        public const string VERSION = "1.0.1";
+        public const string VERSION = "1.0.2";
 
         public const string NONE = "-none-";
 
