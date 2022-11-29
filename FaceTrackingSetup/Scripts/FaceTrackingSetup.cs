@@ -101,6 +101,8 @@ namespace ImTiara.FaceTrackingSetup
         public AnimationClip rightBlinkAnimation;
         public AnimationClip leftWideAnimation;
         public AnimationClip rightWideAnimation;
+        public AnimationClip leftIdleAnimation;
+        public AnimationClip rightIdleAnimation;
 
         public float blinkingThreshold_Blink = BLINKING_BLINK;
         public float blinkingThreshold_Normal = BLINKING_NORMAL;
