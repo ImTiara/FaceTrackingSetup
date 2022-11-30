@@ -75,7 +75,7 @@ namespace ImTiara.FaceTrackingSetup
                 {
                     tempList.Add(fts.faceMesh.sharedMesh.GetBlendShapeName(i));
                 }
-                
+
                 blendShapes = tempList.ToArray();
             }
 
@@ -107,7 +107,7 @@ namespace ImTiara.FaceTrackingSetup
 
                 EditorGUI.indentLevel--;
             }
-            
+
             GUILayout.Space(20);
 
             fts.isShowingEyeTrackingSettings = EditorGUILayout.Foldout(fts.isShowingEyeTrackingSettings, "Eye Tracking", true);
@@ -122,7 +122,7 @@ namespace ImTiara.FaceTrackingSetup
                 GUILayout.Space(10);
 
                 GUI.enabled = fts.enableEyeTracking;
-                
+
                 fts.eyeTrackingMode = (FaceTrackingSetup.EyeTrackingMode)EditorGUILayout.Popup("Mode", (int)fts.eyeTrackingMode, new string[2] { "Eye Bones", "Blendshapes" });
                 switch(fts.eyeTrackingMode)
                 {
@@ -207,7 +207,7 @@ namespace ImTiara.FaceTrackingSetup
                                 fts.leftrightShapeKey = "eyeLookInLeft";
                                 fts.leftupShapeKey = "eyeLookUpLeft";
                                 fts.leftdownShapeKey = "eyeLookDownLeft";
-                                
+
                                 fts.rightleftShapeKey = "eyeLookInRight";
                                 fts.rightrightShapeKey = "eyeLookOutRight";
                                 fts.rightupShapeKey = "eyeLookUpRight";
@@ -356,7 +356,7 @@ namespace ImTiara.FaceTrackingSetup
 
                                 if (name == fts.leftBlinkShapeKey) selectedLeftBlinkShapekeyIndex = i;
                                 if (name == fts.rightBlinkShapeKey) selectedRightBlinkShapekeyIndex = i;
-                                
+
                                 if (name == fts.leftWideShapeKey) selectedLeftWideShapekeyIndex = i;
                                 if (name == fts.rightWideShapeKey) selectedRightWideShapekeyIndex = i;
                             }
@@ -621,7 +621,7 @@ namespace ImTiara.FaceTrackingSetup
                         if (EditorUtility.DisplayDialog("Face Tracking Setup", "Are you sure you want to reset the mouth settings to the default values?", "Reset", "Cancel"))
                         {
                             fts.mouthAffectors = new FaceTrackingSetup.MouthAffector[37];
-                            
+
                             Save(fts);
                         }
                     }
@@ -745,7 +745,7 @@ namespace ImTiara.FaceTrackingSetup
                 }
             }
             GUI.backgroundColor = Color.white;
-            
+
             GUI.enabled = true;
 
             GUILayout.Space(10);
@@ -802,7 +802,7 @@ namespace ImTiara.FaceTrackingSetup
                     AddAnimatorParameter(fx, FaceTrackingSetup.MOUTH_TRACKING_TOGGLE_PARAMETER, AnimatorControllerParameterType.Bool, true);
                     AddVRCParameter(fts.expressionParameters, FaceTrackingSetup.MOUTH_TRACKING_TOGGLE_PARAMETER, VRCExpressionParameters.ValueType.Bool, 1, true);
                 }
-                
+
                 EditorUtility.DisplayProgressBar("Face Tracking Setup - Initiating", "Done", 1.0f);
 
                 CreateEyeTracking(fts, additive, fx, _do_nothing);
@@ -936,30 +936,30 @@ namespace ImTiara.FaceTrackingSetup
                 rightEyeState.motion = rightEyeBlendTree;
 
                 rightEyeState.timeParameterActive = false;
-               
+
 
                 switch(fts.eyeTrackingMode)
                 {
                     case FaceTrackingSetup.EyeTrackingMode.EyeBone:
                         leftEyeState.writeDefaultValues = fts.additiveWriteDefaults;
                         rightEyeState.writeDefaultValues = fts.additiveWriteDefaults;
-                        
+
                         AssetDatabase.AddObjectToAsset(leftEyeBlendTree, AssetDatabase.GetAssetPath(additive));
                         AssetDatabase.AddObjectToAsset(rightEyeBlendTree, AssetDatabase.GetAssetPath(additive));
                         break;
                     case FaceTrackingSetup.EyeTrackingMode.BlendShape:
                         leftEyeState.writeDefaultValues = fts.fxWriteDefaults;
                         rightEyeState.writeDefaultValues = fts.fxWriteDefaults;
-                        
+
                         AssetDatabase.AddObjectToAsset(leftEyeBlendTree, AssetDatabase.GetAssetPath(fx));
                         AssetDatabase.AddObjectToAsset(rightEyeBlendTree, AssetDatabase.GetAssetPath(fx));
                         break;
                 }
-                
+
                 if (fts.createEyeTrackingToggle)
                 {
-                    CreateToggle(leftEyeLayer, leftEyeState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.eyeTrackingMode == FaceTrackingSetup.EyeTrackingMode.EyeBone ? fts.additiveWriteDefaults : fts.fxWriteDefaults);
-                    CreateToggle(rightEyeLayer, rightEyeState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.eyeTrackingMode == FaceTrackingSetup.EyeTrackingMode.EyeBone ? fts.additiveWriteDefaults : fts.fxWriteDefaults);
+                    CreateToggle(leftEyeLayer, leftEyeState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.eyeTrackingMode == FaceTrackingSetup.EyeTrackingMode.EyeBone ? fts.additiveWriteDefaults : fts.fxWriteDefaults, _do_nothing);
+                    CreateToggle(rightEyeLayer, rightEyeState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.eyeTrackingMode == FaceTrackingSetup.EyeTrackingMode.EyeBone ? fts.additiveWriteDefaults : fts.fxWriteDefaults, _do_nothing);
                 }
 
                 EditorUtility.ClearProgressBar();
@@ -1018,7 +1018,7 @@ namespace ImTiara.FaceTrackingSetup
                             eyeLeftIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
                             eyeLeftIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftBlinkShapeKey}", AnimationCurve.Constant(0, 0, 0));
                             AssetDatabase.CreateAsset(eyeLeftIdle, $"{fts.outputPath}/Blinking/Eye_Left_Idle.anim");
-                            
+
                             eyeRightIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
                             eyeRightIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightBlinkShapeKey}", AnimationCurve.Constant(0, 0, 0));
                             AssetDatabase.CreateAsset(eyeRightIdle, $"{fts.outputPath}/Blinking/Eye_Right_Idle.anim");
@@ -1074,7 +1074,7 @@ namespace ImTiara.FaceTrackingSetup
                 rightEyeLidState.writeDefaultValues = fts.fxWriteDefaults;
                 rightEyeLidState.timeParameterActive = false;
                 AssetDatabase.AddObjectToAsset(rightEyeLidBlendTree, AssetDatabase.GetAssetPath(fx));
-        
+
                 switch(fts.blinkingMode)
                 {
                     case FaceTrackingSetup.BlinkingMode.BlendShape:
@@ -1099,8 +1099,8 @@ namespace ImTiara.FaceTrackingSetup
 
                 if (fts.createEyeTrackingToggle)
                 {
-                    CreateToggle(leftEyeLidExpandedLayer, leftEyeLidState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults);
-                    CreateToggle(rightEyeLidExpandedLayer, rightEyeLidState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults);
+                    CreateToggle(leftEyeLidExpandedLayer, leftEyeLidState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults, fts.fxWriteDefaults ? _do_nothing : eyeLeftIdle);
+                    CreateToggle(rightEyeLidExpandedLayer, rightEyeLidState, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults, fts.fxWriteDefaults ? _do_nothing : eyeRightIdle);
                 }
 
                 EditorUtility.ClearProgressBar();
@@ -1158,7 +1158,7 @@ namespace ImTiara.FaceTrackingSetup
 
                 if (fts.createEyeTrackingToggle)
                 {
-                    CreateToggle(eyeDilationLayer, state, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults);
+                    CreateToggle(eyeDilationLayer, state, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults, fts.fxWriteDefaults ? _do_nothing : eyeNormal);
                 }
 
                 EditorUtility.ClearProgressBar();
@@ -1183,11 +1183,11 @@ namespace ImTiara.FaceTrackingSetup
                     for (int i2 = 0; i2 < count; i2++)
                     {
                         if (trackedMouth.affectedBlendshapes[i2].blendShape.Length == 0 || trackedMouth.affectedBlendshapes[i2].blendShape == FaceTrackingSetup.NONE) continue;
-                        
+
                         if (!fts.fxWriteDefaults) clipIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{trackedMouth.affectedBlendshapes[i2].blendShape}", AnimationCurve.Constant(0, 0, 0));
                         clip.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{trackedMouth.affectedBlendshapes[i2].blendShape}", AnimationCurve.Constant(0, 0, trackedMouth.affectedBlendshapes[i2].weight));
                     }
-                    
+
                     AssetDatabase.CreateAsset(clip, $"{fts.outputPath}/Mouth/{FaceTrackingSetup.mouthParameterNames[i]}.anim");
                     if (!fts.fxWriteDefaults) AssetDatabase.CreateAsset(clipIdle, $"{fts.outputPath}/Mouth/{FaceTrackingSetup.mouthParameterNames[i]}_Idle.anim");
 
@@ -1211,10 +1211,10 @@ namespace ImTiara.FaceTrackingSetup
 
                             if (fts.createEyeTrackingToggle)
                             {
-                                CreateToggle(layer, state, FaceTrackingSetup.MOUTH_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults);
+                                CreateToggle(layer, state, FaceTrackingSetup.MOUTH_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults, fts.fxWriteDefaults ? _do_nothing : clipIdle);
                             }
                             break;
-                            
+
                             /// TODO: Add binary support
                     }
                 }
@@ -1223,16 +1223,16 @@ namespace ImTiara.FaceTrackingSetup
             }
         }
         #endregion
-        
+
         #region Removers
         public void RemoveAll()
         {
             EditorUtility.DisplayProgressBar("Face Tracking Setup", "Removing existing setup", 0.0f);
-            
+
             FaceTrackingSetup fts = (FaceTrackingSetup)target;
             var additive = fts.additive != null ? AssetDatabase.LoadAssetAtPath<AnimatorController>(AssetDatabase.GetAssetPath(fts.additive)) : null;
             var fx = AssetDatabase.LoadAssetAtPath<AnimatorController>(AssetDatabase.GetAssetPath(fts.fx));
-            
+
             RemoveEyeTracking(fts, additive, fx);
             RemoveEyeBlink(fts, fx);
             RemoveEyeDilation(fts, fx);
@@ -1242,7 +1242,7 @@ namespace ImTiara.FaceTrackingSetup
             RemoveVRCParameters(fts.expressionParameters, FaceTrackingSetup.EYE_TRACKING_TOGGLE_PARAMETER, FaceTrackingSetup.MOUTH_TRACKING_TOGGLE_PARAMETER);
 
             EditorUtility.DisplayProgressBar("Face Tracking Setup", "Removing existing setup", 1.0f);
-            
+
             EditorUtility.ClearProgressBar();
         }
 
@@ -1253,7 +1253,7 @@ namespace ImTiara.FaceTrackingSetup
                 RemoveLayers(additive, "Left Eye", "Right Eye");
                 RemoveAnimatorParameters(additive, "LeftEyeX", "RightEyeX", "EyesY");
             }
-            
+
             RemoveLayers(fx, "Left Eye", "Right Eye");
             RemoveAnimatorParameters(fx, "LeftEyeX", "RightEyeX", "EyesY");
             RemoveVRCParameters(fts.expressionParameters, "LeftEyeX", "RightEyeX", "EyesY");
@@ -1294,10 +1294,10 @@ namespace ImTiara.FaceTrackingSetup
                     hideFlags = HideFlags.HideInHierarchy,
                 }
             };
-                
+
             AssetDatabase.AddObjectToAsset(layer.stateMachine, AssetDatabase.GetAssetPath(controller));
             controller.AddLayer(layer);
-            
+
             return layer;
         }
 
@@ -1392,10 +1392,11 @@ namespace ImTiara.FaceTrackingSetup
             vrcParameters.parameters = _parameters.ToArray();
         }
 
-        public static void CreateToggle(AnimatorControllerLayer layer, AnimatorState animatorState, string parameter, bool writeDefaults)
+        public static void CreateToggle(AnimatorControllerLayer layer, AnimatorState animatorState, string parameter, bool writeDefaults, AnimationClip clip)
         {
             var disable = layer.stateMachine.AddState("Disable");
             disable.writeDefaultValues = writeDefaults;
+            disable.motion = clip;
             var onToDisable = animatorState.AddTransition(disable);
             var disableToOn = disable.AddTransition(animatorState);
 
@@ -1411,7 +1412,7 @@ namespace ImTiara.FaceTrackingSetup
         public static void Save(params Object[] @objects)
         {
             AssetDatabase.Refresh();
-            
+
             foreach (var @object in @objects)
             {
                 if (@object != null)
@@ -1419,7 +1420,7 @@ namespace ImTiara.FaceTrackingSetup
                     EditorUtility.SetDirty(@object);
                 }
             }
-            
+
             AssetDatabase.SaveAssets();
             UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
         }
