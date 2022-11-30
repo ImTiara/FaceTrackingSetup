@@ -403,11 +403,14 @@ namespace ImTiara.FaceTrackingSetup
 
                         fts.leftWideAnimation = (AnimationClip)EditorGUILayout.ObjectField("Left Wide", fts.leftWideAnimation, typeof(AnimationClip), false);
                         fts.rightWideAnimation = (AnimationClip)EditorGUILayout.ObjectField("Right Wide", fts.rightWideAnimation, typeof(AnimationClip), false);
-                        
-                        GUILayout.Space(10);
 
-                        fts.leftIdleAnimation = (AnimationClip)EditorGUILayout.ObjectField("Left Idle", fts.leftIdleAnimation, typeof(AnimationClip), false);
-                        fts.rightIdleAnimation = (AnimationClip)EditorGUILayout.ObjectField("Right Idle", fts.rightIdleAnimation, typeof(AnimationClip), false);
+                        if (!fts.fxWriteDefaults)
+                        {
+                            GUILayout.Space(10);
+
+                            fts.leftIdleAnimation = (AnimationClip)EditorGUILayout.ObjectField("Left Idle", fts.leftIdleAnimation, typeof(AnimationClip), false);
+                            fts.rightIdleAnimation = (AnimationClip)EditorGUILayout.ObjectField("Right Idle", fts.rightIdleAnimation, typeof(AnimationClip), false);
+                        }
                         break;
                 }
 
@@ -805,7 +808,7 @@ namespace ImTiara.FaceTrackingSetup
                 CreateEyeTracking(fts, additive, fx, _do_nothing);
                 CreateEyeBlink(fts, fx, _do_nothing);
                 CreateEyeDilation(fts, fx, _do_nothing);
-                CreateMouthTracking(fts, fx);
+                CreateMouthTracking(fts, fx, _do_nothing);
 
                 EditorUtility.DisplayProgressBar("Face Tracking Setup", "Saving", 1.0f);
 
@@ -994,32 +997,37 @@ namespace ImTiara.FaceTrackingSetup
                         eyeLeftIdle = new AnimationClip();
                         eyeRightIdle = new AnimationClip();
 
-                        eyeLeftBlink.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
                         eyeLeftBlink.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftBlinkShapeKey}", AnimationCurve.Constant(0, 0, 100));
-                        AssetDatabase.CreateAsset(eyeLeftBlink, $"{fts.outputPath}/Blinking/Eye_Left_Blink.anim");
 
-                        eyeRightBlink.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
                         eyeRightBlink.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightBlinkShapeKey}", AnimationCurve.Constant(0, 0, 100));
-                        AssetDatabase.CreateAsset(eyeRightBlink, $"{fts.outputPath}/Blinking/Eye_Right_Blink.anim");
 
                         eyeLeftWide.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftWideShapeKey}", AnimationCurve.Constant(0, 0, 100));
-                        eyeLeftWide.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftBlinkShapeKey}", AnimationCurve.Constant(0, 0, 0));
-                        AssetDatabase.CreateAsset(eyeLeftWide, $"{fts.outputPath}/Blinking/Eye_Left_Wide.anim");
 
                         eyeRightWide.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightWideShapeKey}", AnimationCurve.Constant(0, 0, 100));
-                        eyeRightWide.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightBlinkShapeKey}", AnimationCurve.Constant(0, 0, 0));
+
+                        if (!fts.fxWriteDefaults)
+                        {
+                            eyeLeftBlink.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
+
+                            eyeRightBlink.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
+
+                            eyeLeftWide.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftBlinkShapeKey}", AnimationCurve.Constant(0, 0, 0));
+
+                            eyeRightWide.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightBlinkShapeKey}", AnimationCurve.Constant(0, 0, 0));
+
+                            eyeLeftIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
+                            eyeLeftIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftBlinkShapeKey}", AnimationCurve.Constant(0, 0, 0));
+                            AssetDatabase.CreateAsset(eyeLeftIdle, $"{fts.outputPath}/Blinking/Eye_Left_Idle.anim");
+                            
+                            eyeRightIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
+                            eyeRightIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightBlinkShapeKey}", AnimationCurve.Constant(0, 0, 0));
+                            AssetDatabase.CreateAsset(eyeRightIdle, $"{fts.outputPath}/Blinking/Eye_Right_Idle.anim");
+                        }
+
+                        AssetDatabase.CreateAsset(eyeLeftWide, $"{fts.outputPath}/Blinking/Eye_Left_Wide.anim");
+                        AssetDatabase.CreateAsset(eyeLeftBlink, $"{fts.outputPath}/Blinking/Eye_Left_Blink.anim");
+                        AssetDatabase.CreateAsset(eyeRightBlink, $"{fts.outputPath}/Blinking/Eye_Right_Blink.anim");
                         AssetDatabase.CreateAsset(eyeRightWide, $"{fts.outputPath}/Blinking/Eye_Right_Wide.anim");
-
-                        eyeLeftIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
-                        eyeLeftIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.leftBlinkShapeKey}", AnimationCurve.Constant(0, 0, 0));
-                        AssetDatabase.CreateAsset(eyeLeftIdle, $"{fts.outputPath}/Blinking/Eye_Left_Idle.anim");
-
-                        eyeRightIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightWideShapeKey}", AnimationCurve.Constant(0, 0, 0));
-                        eyeRightIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.rightBlinkShapeKey}", AnimationCurve.Constant(0, 0, 0));
-                        AssetDatabase.CreateAsset(eyeRightIdle, $"{fts.outputPath}/Blinking/Eye_Right_Idle.anim");
-
-
-
                         break;
                     case FaceTrackingSetup.BlinkingMode.Animation:
                         eyeLeftBlink = fts.leftBlinkAnimation;
@@ -1071,20 +1079,20 @@ namespace ImTiara.FaceTrackingSetup
                 {
                     case FaceTrackingSetup.BlinkingMode.BlendShape:
                         leftEyeLidBlendTree.AddChild(fts.leftBlinkShapeKey != FaceTrackingSetup.NONE ? eyeLeftBlink : _do_nothing, fts.blinkingThreshold_Blink);
-                        leftEyeLidBlendTree.AddChild(eyeLeftIdle, fts.blinkingThreshold_Normal);
+                        leftEyeLidBlendTree.AddChild(fts.fxWriteDefaults ? _do_nothing : eyeLeftIdle, fts.blinkingThreshold_Normal);
                         leftEyeLidBlendTree.AddChild(fts.leftWideShapeKey != FaceTrackingSetup.NONE ? eyeLeftWide : _do_nothing, fts.blinkingThreshold_Wide);
 
                         rightEyeLidBlendTree.AddChild(fts.rightBlinkShapeKey != FaceTrackingSetup.NONE ? eyeRightBlink : _do_nothing, fts.blinkingThreshold_Blink);
-                        rightEyeLidBlendTree.AddChild(eyeRightIdle, fts.blinkingThreshold_Normal);
+                        rightEyeLidBlendTree.AddChild(fts.fxWriteDefaults ? _do_nothing : eyeRightIdle, fts.blinkingThreshold_Normal);
                         rightEyeLidBlendTree.AddChild(fts.rightWideShapeKey != FaceTrackingSetup.NONE ? eyeRightWide : _do_nothing, fts.blinkingThreshold_Wide);
                         break;
                     case FaceTrackingSetup.BlinkingMode.Animation:
                         leftEyeLidBlendTree.AddChild(eyeLeftBlink, fts.blinkingThreshold_Blink);
-                        leftEyeLidBlendTree.AddChild(eyeLeftIdle, fts.blinkingThreshold_Normal);
+                        leftEyeLidBlendTree.AddChild(fts.fxWriteDefaults ? _do_nothing : eyeLeftIdle, fts.blinkingThreshold_Normal);
                         leftEyeLidBlendTree.AddChild(eyeLeftWide, fts.blinkingThreshold_Wide);
 
                         rightEyeLidBlendTree.AddChild(eyeRightBlink, fts.blinkingThreshold_Blink);
-                        rightEyeLidBlendTree.AddChild(eyeRightIdle, fts.blinkingThreshold_Normal);
+                        rightEyeLidBlendTree.AddChild(fts.fxWriteDefaults ? _do_nothing : eyeRightIdle, fts.blinkingThreshold_Normal);
                         rightEyeLidBlendTree.AddChild(eyeRightWide, fts.blinkingThreshold_Wide);
                         break;
                 }
@@ -1121,12 +1129,15 @@ namespace ImTiara.FaceTrackingSetup
                 AnimationClip eyeConstricted = new AnimationClip();
 
                 eyeDilated.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.dilatedShapeKey}", AnimationCurve.Constant(0, 0, 100));
-                eyeDilated.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.constrictedShapeKey}", AnimationCurve.Constant(0, 0, 0));
+                if (!fts.fxWriteDefaults) eyeDilated.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.constrictedShapeKey}", AnimationCurve.Constant(0, 0, 0));
                 AssetDatabase.CreateAsset(eyeDilated, $"{fts.outputPath}/Pupils/Eye_Dilated.anim");
 
-                eyeNormal.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.dilatedShapeKey}", AnimationCurve.Constant(0, 0, 0));
-                eyeNormal.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.constrictedShapeKey}", AnimationCurve.Constant(0, 0, 0));
-                AssetDatabase.CreateAsset(eyeNormal, $"{fts.outputPath}/Pupils/Eye_Normal.anim");
+                if (!fts.fxWriteDefaults)
+                {
+                    eyeNormal.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.dilatedShapeKey}", AnimationCurve.Constant(0, 0, 0));
+                    eyeNormal.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.constrictedShapeKey}", AnimationCurve.Constant(0, 0, 0));
+                    AssetDatabase.CreateAsset(eyeNormal, $"{fts.outputPath}/Pupils/Eye_Normal.anim");
+                }
 
                 eyeConstricted.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.dilatedShapeKey}", AnimationCurve.Constant(0, 0, 0));
                 eyeConstricted.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{fts.constrictedShapeKey}", AnimationCurve.Constant(0, 0, 100));
@@ -1136,7 +1147,7 @@ namespace ImTiara.FaceTrackingSetup
 
                 BlendTree blendTree = new BlendTree() { name = "Pupil", blendParameter = "EyesDilation", useAutomaticThresholds = false };
                 blendTree.AddChild(fts.constrictedShapeKey != FaceTrackingSetup.NONE ? eyeConstricted : _do_nothing, fts.pupilsThreshold_Constricted);
-                blendTree.AddChild(eyeNormal, fts.pupilsThreshold_Normal);
+                blendTree.AddChild(fts.fxWriteDefaults ? _do_nothing : eyeNormal, fts.pupilsThreshold_Normal);
                 blendTree.AddChild(fts.dilatedShapeKey != FaceTrackingSetup.NONE ? eyeDilated : _do_nothing, fts.pupilsThreshold_Dilated);
                 blendTree.hideFlags = HideFlags.HideInHierarchy;
                 var state = eyeDilationLayer.stateMachine.AddState("Pupil");
@@ -1154,7 +1165,7 @@ namespace ImTiara.FaceTrackingSetup
             }
         }
 
-        public static void CreateMouthTracking(FaceTrackingSetup fts, AnimatorController fx)
+        public static void CreateMouthTracking(FaceTrackingSetup fts, AnimatorController fx, AnimationClip _do_nothing)
         {
             if (fts.mouthEnable)
             {
@@ -1173,12 +1184,12 @@ namespace ImTiara.FaceTrackingSetup
                     {
                         if (trackedMouth.affectedBlendshapes[i2].blendShape.Length == 0 || trackedMouth.affectedBlendshapes[i2].blendShape == FaceTrackingSetup.NONE) continue;
                         
-                        clipIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{trackedMouth.affectedBlendshapes[i2].blendShape}", AnimationCurve.Constant(0, 0, 0));
+                        if (!fts.fxWriteDefaults) clipIdle.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{trackedMouth.affectedBlendshapes[i2].blendShape}", AnimationCurve.Constant(0, 0, 0));
                         clip.SetCurve(fts.faceMesh.name, typeof(SkinnedMeshRenderer), $"blendShape.{trackedMouth.affectedBlendshapes[i2].blendShape}", AnimationCurve.Constant(0, 0, trackedMouth.affectedBlendshapes[i2].weight));
                     }
                     
                     AssetDatabase.CreateAsset(clip, $"{fts.outputPath}/Mouth/{FaceTrackingSetup.mouthParameterNames[i]}.anim");
-                    AssetDatabase.CreateAsset(clipIdle, $"{fts.outputPath}/Mouth/{FaceTrackingSetup.mouthParameterNames[i]}_Idle.anim");
+                    if (!fts.fxWriteDefaults) AssetDatabase.CreateAsset(clipIdle, $"{fts.outputPath}/Mouth/{FaceTrackingSetup.mouthParameterNames[i]}_Idle.anim");
 
                     switch (trackedMouth.type)
                     {
@@ -1189,7 +1200,7 @@ namespace ImTiara.FaceTrackingSetup
                             AddAnimatorParameter(fx, FaceTrackingSetup.mouthParameterNames[i], AnimatorControllerParameterType.Float, 0.0f);
 
                             BlendTree blendTree = new BlendTree() { name = FaceTrackingSetup.mouthParameterNames[i], blendParameter = FaceTrackingSetup.mouthParameterNames[i], useAutomaticThresholds = false };
-                            blendTree.AddChild(clipIdle, 0.0f);
+                            blendTree.AddChild(fts.fxWriteDefaults ? _do_nothing : clipIdle, 0.0f);
                             blendTree.AddChild(clip, 1.0f);
                             blendTree.hideFlags = HideFlags.HideInHierarchy;
                             var state = layer.stateMachine.AddState(FaceTrackingSetup.mouthParameterNames[i]);
