@@ -22,6 +22,7 @@ Each component allows you to easily tweak the settings to your needs.
 - An avatar capable of face tracking (blendshapes, eyebones etc)
 
 # TODO
+- Mouth parameter optimization by utilizing the "combined parameters".
 - Binary parameter support for the Mouth Tracking.
 
 # Screenshots
