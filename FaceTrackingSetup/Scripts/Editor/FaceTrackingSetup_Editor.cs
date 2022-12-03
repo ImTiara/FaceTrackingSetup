@@ -15,14 +15,16 @@ namespace ImTiara.FaceTrackingSetup
     [CustomEditor(typeof(FaceTrackingSetup))]
     public sealed class FaceTrackingSetup_Editor : Editor
     {
-        public static string[] blendShapes = new string[0];
-
         public static readonly Color red = new Color(1.0f, 0.6f, 0.6f);
         public static readonly Color yellow = new Color(1.0f, 1.0f, 0.6f);
         public static readonly Color green = new Color(0.6f, 1.0f, 0.6f);
 
-        public static string[] filterKeywords = new string[0];
-        public static string filterString = "";
+        public string[] blendShapes = new string[0];
+
+        public string[] filterKeywords = new string[0];
+        public string filterString = "";
+
+        public Vector2 mouthScroll;
 
         public override void OnInspectorGUI()
         {
@@ -653,6 +655,8 @@ namespace ImTiara.FaceTrackingSetup
 
                     GUILayout.Space(10);
 
+                    mouthScroll = EditorGUILayout.BeginScrollView(mouthScroll, GUILayout.Height(500));
+
                     for (int i = 0; i < FaceTrackingSetup.mouthParameterNames.Length; i++)
                     {
                         bool shouldShow = true;
@@ -727,6 +731,8 @@ namespace ImTiara.FaceTrackingSetup
 
                         GUILayout.Space(50);
                     }
+
+                    EditorGUILayout.EndScrollView();
 
                     GUI.enabled = true;
                 }
