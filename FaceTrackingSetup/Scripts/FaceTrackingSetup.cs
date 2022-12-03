@@ -131,6 +131,8 @@ namespace ImTiara.FaceTrackingSetup
 
         #region Mouth
         public bool mouthEnable;
+        public bool disableWhenTalking;
+        public float disableWhenTalkingTDuration = 0.2f;
 
         public MouthAffector[] mouthAffectors = new MouthAffector[37];
 

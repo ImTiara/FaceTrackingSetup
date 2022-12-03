@@ -552,6 +552,14 @@ namespace ImTiara.FaceTrackingSetup
                 {
                     GUI.enabled = fts.mouthEnable;
 
+                    fts.disableWhenTalking = EditorGUILayout.Toggle("Disable When Talking", fts.disableWhenTalking);
+                    if (fts.disableWhenTalking)
+                    {
+                        fts.disableWhenTalkingTDuration = EditorGUILayout.Slider("Transition Duration", fts.disableWhenTalkingTDuration, 0.0f, 1.0f);
+                    }
+
+                    GUILayout.Space(10);
+
                     GUI.backgroundColor = yellow;
                     if (GUILayout.Button("Auto Setup From ARKit"))
                     {
@@ -620,6 +628,9 @@ namespace ImTiara.FaceTrackingSetup
                     {
                         if (EditorUtility.DisplayDialog("Face Tracking Setup", "Are you sure you want to reset the mouth settings to the default values?", "Reset", "Cancel"))
                         {
+                            fts.disableWhenTalking = false;
+                            fts.disableWhenTalkingTDuration = 0.2f;
+
                             fts.mouthAffectors = new FaceTrackingSetup.MouthAffector[37];
 
                             Save(fts);
@@ -1171,6 +1182,8 @@ namespace ImTiara.FaceTrackingSetup
             {
                 if (!AssetDatabase.IsValidFolder($"{fts.outputPath}/Mouth")) AssetDatabase.CreateFolder($"{fts.outputPath}", "Mouth");
 
+                if (fts.disableWhenTalking) AddAnimatorParameter(fx, "Viseme", AnimatorControllerParameterType.Int);
+
                 for (int i = 0; i < FaceTrackingSetup.mouthParameterNames.Length; i++)
                 {
                     var trackedMouth = fts.mouthAffectors[i];
@@ -1209,13 +1222,44 @@ namespace ImTiara.FaceTrackingSetup
                             state.timeParameterActive = false;
                             AssetDatabase.AddObjectToAsset(blendTree, AssetDatabase.GetAssetPath(fx));
 
-                            if (fts.createEyeTrackingToggle)
+                            if (fts.createMouthTrackingToggle || fts.disableWhenTalking)
                             {
-                                CreateToggle(layer, state, FaceTrackingSetup.MOUTH_TRACKING_TOGGLE_PARAMETER, fts.fxWriteDefaults, fts.fxWriteDefaults ? _do_nothing : clipIdle);
+                                CreateMouthToggle(layer, state, fts.fxWriteDefaults, fts.fxWriteDefaults ? _do_nothing : clipIdle);
                             }
                             break;
 
                             /// TODO: Add binary support
+                    }
+                }
+
+                void CreateMouthToggle(AnimatorControllerLayer layer, AnimatorState animatorState, bool writeDefaults, AnimationClip clip)
+                {
+                    var disable = layer.stateMachine.AddState("Disable");
+                    disable.writeDefaultValues = writeDefaults;
+                    disable.motion = clip;
+
+                    var disableToOn = disable.AddTransition(animatorState);
+                    disableToOn.hasExitTime = false;
+                    disableToOn.duration = fts.disableWhenTalkingTDuration;
+
+                    if (fts.createMouthTrackingToggle)
+                    {
+                        var onToDisable1 = animatorState.AddTransition(disable);
+                        onToDisable1.hasExitTime = false;
+                        onToDisable1.duration = fts.disableWhenTalkingTDuration;
+                        onToDisable1.AddCondition(AnimatorConditionMode.IfNot, 0, FaceTrackingSetup.MOUTH_TRACKING_TOGGLE_PARAMETER);
+
+                        disableToOn.AddCondition(AnimatorConditionMode.If, 0, FaceTrackingSetup.MOUTH_TRACKING_TOGGLE_PARAMETER);
+                    }
+
+                    if (fts.disableWhenTalking)
+                    {
+                        disableToOn.AddCondition(AnimatorConditionMode.Equals, 0, "Viseme");
+
+                        var onToDisable2 = animatorState.AddTransition(disable);
+                        onToDisable2.hasExitTime = false;
+                        onToDisable2.duration = fts.disableWhenTalkingTDuration;
+                        onToDisable2.AddCondition(AnimatorConditionMode.NotEqual, 0, "Viseme");
                     }
                 }
 
@@ -1318,6 +1362,8 @@ namespace ImTiara.FaceTrackingSetup
         public static void AddAnimatorParameter(AnimatorController controller, string name, AnimatorControllerParameterType valueType, object defaultValue = null)
         {
             var x = controller.parameters.ToList();
+
+            if (x.FirstOrDefault(_ => _.name == name) != null) return;
 
             var parameter = new AnimatorControllerParameter
             {
